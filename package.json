@@ -1,0 +1,15 @@
+{
+    "name": "top-level-project",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+      "start": "concurrently \"npm run start --prefix react-app\" \"npm run start --prefix node-api\"",
+      "start:dev": "concurrently \"npm run dev --prefix react-app\" \"npm run start:dev --prefix node-api\"",
+      "build": "npm run build --prefix react-app && npm run build --prefix node-api",
+      "lint": "npm run lint --prefix react-app"
+    },
+    "devDependencies": {
+      "concurrently": "^8.2.2"
+    }
+  }
+  

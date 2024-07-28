@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+
+  api:
+    build: ./node-api/.
+    env_file:
+      - ./node-api/.env
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - pgsql-db
+
+  pgsql-db:
+    image: postgres
+    env_file:
+      - ./node-api/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgsql-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  react-app:
+    build: ./react-app/.
+    env_file:
+      - ./react-app/.env
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+
+volumes:
+  pgsql-data:
+    driver: local
