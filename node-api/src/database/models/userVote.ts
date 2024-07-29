@@ -18,7 +18,7 @@ export class UserVote {
     optionId: number;
 
     @ManyToOne(() => User)
-    @JoinColumn({ name: 'userId' })
+    @JoinColumn({ name: 'userId'})
     user: User | undefined;
 
     @ManyToOne(() => Vote)

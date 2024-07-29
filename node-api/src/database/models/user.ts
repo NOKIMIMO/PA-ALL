@@ -26,6 +26,13 @@ export class User {
     @Column({
         default: true
     })
+    @Column()
+    lastname: string
+
+    @Column()
+    firstname: string
+
+    @Column({default: true})
     active: boolean
     @CreateDateColumn({name: 'created_at', type: 'timestamp with time zone' })
     createdAt: Date
@@ -50,7 +57,9 @@ export class User {
     
     constructor(id: number, email: string, password: string, createdAt: Date,updatedAt: Date,
          tokens: Token[],role: string,events: Event[],
-         active: boolean,posts: Post[],comments: Comment[],files: File[], userVotes: UserVote[]) {
+         active: boolean,posts: Post[],comments: Comment[],
+         files: File[], userVotes: UserVote[],
+         lastname: string, firstname: string) {
         this.id = id;
         this.email = email; 
         this.password = password;
@@ -64,5 +73,7 @@ export class User {
         this.comments=comments;
         this.files=files;
         this.userVotes=userVotes;
+        this.lastname=lastname;
+        this.firstname=firstname;
     }
 };

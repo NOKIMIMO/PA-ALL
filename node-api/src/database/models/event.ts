@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 import { User } from "./user";
+import { Task } from "./task";
 
 @Entity()
 export class Event {
@@ -15,6 +16,9 @@ export class Event {
     @ManyToOne(() => User, user => user.events)
     @JoinColumn({ name: "userId" }) // Joining on userId
     user: User;
+
+    @OneToMany(() => Task, task => task.event)
+    tasks: Task[];
 
     @Column()
     description: string;
@@ -37,10 +41,10 @@ export class Event {
     @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
     updatedAt: Date;
 
-    @Column({ default: false, nullable: true })
-    isAG: boolean;
-
-    constructor(id: number, title: string, userId: number, user: User, description: string, data_access_type: string, event_date: Date, location: string, createdAt: Date, updatedAt: Date, active: boolean, isAG: boolean = false) {
+    constructor(id: number, title: string, userId: number,
+         user: User, description: string, data_access_type: string,
+          event_date: Date, location: string, createdAt: Date, updatedAt: Date,
+           active: boolean, tasks: Task[]) {
         this.id = id;
         this.title = title;
         this.user = user;
@@ -52,6 +56,6 @@ export class Event {
         this.updatedAt = updatedAt;
         this.userId = userId;
         this.active = active;
-        this.isAG = isAG;
+        this.tasks = tasks;
     }
 }

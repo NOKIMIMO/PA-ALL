@@ -6,7 +6,7 @@ import { File } from "../database/models/file";
 import fs from 'fs';
 import { CustomError } from "../common/error/customError";
 import { validatorMiddleware } from "../common/middleware/validator-middleware";
-import { createFileValidation } from "../Validators/fileValidator";
+import { createFileValidation, updateFileValidation } from "../Validators/fileValidator";
 import multer from "multer";
 import { JwtPayload } from 'jsonwebtoken';
 import path from 'path';
@@ -236,6 +236,25 @@ router.post('/crypt/:fileId',
         }
     }
 );
+router.patch('/:fileId',
+    authMiddleware,
+    validatorMiddleware(updateFileValidation, 'body'),
+    async (req: Request & {user?:JwtPayload}, res: Response): Promise<void> => {
+        const fileId = parseInt(req.params.fileId);
+        try {
+            const fileUseCase = new FileUseCase(db);
+            const updatedFile = await fileUseCase.updateFile(fileId,req.user?.userId!, req.body);
+            res.status(200);
+            res.send(updatedFile);
+        } catch (err) {
+            if (err instanceof CustomError) {
+                res.status(err.code).send(err.message);
+            } else {
+                res.status(500).send({error:"Failed to update file"});
+            }
+        }
+    });
+    
 
 
 

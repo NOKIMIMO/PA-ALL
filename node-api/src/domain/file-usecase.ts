@@ -1,7 +1,7 @@
 import { DataSource } from "typeorm";
 import { File } from "../database/models/file";
 import { CustomError } from "../common/error/customError";
-import { CreateFileRequest } from "../Validators/fileValidator";
+import { CreateFileRequest, UpdateFileRequest } from "../Validators/fileValidator";
 import {CreateUserFileRequest } from "../Validators/userFileValidator";
 import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
 import { promisify } from 'util';
@@ -95,10 +95,39 @@ export class FileUseCase {
         }
     }
 
-    async updateFile(file: File): Promise<File> {
+    async updateFile(fileId : number,userId: number,fileRequest: UpdateFileRequest): Promise<File> {
         try {
             const fileRepo = this.dataSource.getRepository(File)
+            const file = await fileRepo.findOneBy({ id: fileId })
+            if (!file) {
+                throw new CustomError(404, "File not found")
+            }
+            if (file.userId !== userId) {
+                throw new CustomError(403, "Unauthorized")
+            }
+            if (file.type === 'folder') {
+                //if file is a folder, update only the name
+                if(fileRequest.name){
+                    file.name = fileRequest.name
+                }
+            }
+            if (file.type === 'file') {
+
+                if (fileRequest.name) {
+                    file.name = fileRequest.name
+                }
+                if (fileRequest.type) {
+                    file.type = fileRequest.type
+                }
+                if (fileRequest.readOnly) {
+                    file.readOnly = fileRequest.readOnly
+                }
+                if (fileRequest.parentId) {
+                    file.parentId = fileRequest.parentId
+                }
+            }
             return await fileRepo.save(file)
+            
         } catch (err) {
             throw new CustomError(500, "Failed to update file")
         }
