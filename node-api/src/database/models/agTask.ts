@@ -2,12 +2,9 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, Pr
 import { Event } from "./event";
 
 @Entity()
-export class Task{
+export class AgTask{
     @PrimaryGeneratedColumn()
     id: number;
-
-    @Column()
-    title: string;
 
     @Column()
     description: string;
@@ -18,8 +15,8 @@ export class Task{
     @Column()
     max_end_date: Date;
 
-    @ManyToMany(() => Task, task => task.id)
-    task: Task[]
+    @ManyToMany(() => AgTask, task => task.id)
+    task: AgTask[]
 
     @Column({ name: 'eventId' })
     eventId: number; 
@@ -36,7 +33,7 @@ export class Task{
     
     constructor(id: number, description: string, completed: boolean,
          max_end_date: Date, createdAt: Date, updatedAt: Date,
-          event: Event , task: Task[], eventId: number, title: string) {
+          event: Event , task: AgTask[], eventId: number) {
         this.id = id;
         this.description = description;
         this.completed = completed;
@@ -46,7 +43,6 @@ export class Task{
         this.event = event;
         this.task = task;
         this.eventId = eventId;
-        this.title = title;
     }
     
     

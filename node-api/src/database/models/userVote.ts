@@ -6,7 +6,7 @@ import { Option } from './option';
 @Entity({ name: 'user_votes' })
 export class UserVote {
     @PrimaryGeneratedColumn()
-    id: number | undefined;
+    id: number;
 
     @Column()
     userId: number;
@@ -29,7 +29,8 @@ export class UserVote {
     @JoinColumn({ name: 'optionId' })
     option: Option | undefined;
 
-    constructor(userId: number, voteId: number, optionId: number) {
+    constructor(id:number,userId: number, voteId: number, optionId: number) {
+        this.id = id;
         this.userId = userId;
         this.voteId = voteId;
         this.optionId = optionId;

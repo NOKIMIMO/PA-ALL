@@ -70,7 +70,7 @@ router.get('/:id',
         authMiddleware,
         validatorMiddleware(selectUserValidation, 'params'),
         accessMiddleware(
-            () => { return [user_access_type.ADMIN, user_access_type.SUPER_ADMIN, user_access_type.PARTNER]; }
+            () => { return [ user_access_type.SUPER_ADMIN]; }
         ), async (req: Request, res: Response): Promise<void> => {
             const userId = Number(req.params.id); // Récupérez l'ID de l'utilisateur à partir de req.params
             try {
