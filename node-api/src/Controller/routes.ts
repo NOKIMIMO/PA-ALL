@@ -6,12 +6,14 @@ import postRoutes from './PostController';
 import fileRoutes from './FileController';
 import contactRoutes from './ContactController'; // Ajoutez cette ligne
 import voteRoutes from './VoteController';
+import AgController from './AgController';
+import AgTaskController from './AgTaskController';
+import TaskController from './TaskController';
 import { authMiddleware } from "../common/middleware/auth-middleware";
 import { accessMiddleware } from "../common/middleware/access-middleware";
 import { user_access_type } from "../common/enum/access-type";
 import Stripe from "stripe";
-import fs from 'fs';
-// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 
@@ -34,7 +36,9 @@ export const routes = (app: Express) => {
     app.use('/api/v1/posts', postRoutes);
     app.use('/api/v1/files', fileRoutes);
     app.use('/api/v1/votes', voteRoutes); // Utilisez le contrôleur de votes
-
+    app.use('/api/v1/ag', AgController);
+    app.use('/api/v1/ag-task', AgTaskController);
+    app.use('/api/v1/task', TaskController);
     app.use('/api/v1/contact', contactRoutes); // Ajoutez cette ligne
     app.post('/api/v1/create-checkout-session', async (req, res) => {
         try {
@@ -45,7 +49,7 @@ export const routes = (app: Express) => {
             }
 
             const { headers } = req;
-            const origin = typeof headers.referer === 'string' ? new URL(headers.referer).origin : 'https://your_domain.com';
+            const origin = typeof headers.referer === 'string' ? new URL(headers.referer).origin : 'http://localhost:5173';
 
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
@@ -83,45 +87,4 @@ export const routes = (app: Express) => {
             res.status(500).json({ error: 'Failed to retrieve checkout session' });
         }
     });
-    // app.get('/api/v1/download', async (res: Response) => {
-    //     console.log(Object.keys(res)); 
-    //     const file = "../../test.txt";
-    //     console.log(file);
-    //     res.download(file, (err) => {
-    //         if (err) {
-    //             res.status(500).send('Error downloading file');
-    //         }
-    //     });
-    // });
-
-    // app.get('/api/v1/download', async (req, res) => {
-    //     const file = fs.createWriteStream("README.md");
-
-    //     res.pipe(file);
-
-    //     file.on('finish', () => {
-    //         file.close(() => {
-    //             console.log('Download Completed');
-    //             res.send('Download Completed');
-    //         });
-    //     });
-    //     file.on('error', (err) => {
-    //         fs.unlink("README.md", () => {}); // Delete the file async if there's an error
-    //         console.error('File stream error:', err);
-    //         res.status(500).send('File download error');
-    //     });
-    // });
-
-    // app.get("/api/v1/download", function(response) {
-    //     // const file = fs.createWriteStream(process.env.APP_STORAGE_PATH??'');
-    //     const file = fs.createWriteStream("README.md");
-    //     console.log(file);
-    //     response.pipe(file);
-     
-    //     // after download completed close filestream
-    //     file.on("finish", () => {
-    //         file.close();
-    //         console.log("Download Completed");
-    //     });
-    //  });
 };

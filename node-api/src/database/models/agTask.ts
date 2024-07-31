@@ -7,6 +7,9 @@ export class AgTask{
     id: number;
 
     @Column()
+    title: string;
+
+    @Column()
     description: string;
 
     @Column({default: false})
@@ -33,7 +36,7 @@ export class AgTask{
     
     constructor(id: number, description: string, completed: boolean,
          max_end_date: Date, createdAt: Date, updatedAt: Date,
-          event: Event , task: AgTask[], eventId: number) {
+          event: Event , task: AgTask[], eventId: number, title: string) {
         this.id = id;
         this.description = description;
         this.completed = completed;
@@ -43,6 +46,7 @@ export class AgTask{
         this.event = event;
         this.task = task;
         this.eventId = eventId;
+        this.title = title;
     }
     
     

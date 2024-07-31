@@ -7,7 +7,7 @@ import { User } from "../database/models/user";
 import { user_access_type } from "../common/enum/access-type";
 import { UsersEvents } from "../database/models/users-events";
 
-export class EventUseCase {
+export default class EventUseCase {
 
     constructor(private readonly db:DataSource) {}
 

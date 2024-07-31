@@ -2,7 +2,7 @@ import {Request,response,Response,Router}  from 'express';
 import {listItemValidation} from '../Validators/commonValidator';
 import { db } from '../database/db';
 import { authMiddleware } from '../common/middleware/auth-middleware';
-import { EventUseCase } from '../domain/event-usecase';
+import  EventUseCase  from '../domain/event-usecase';
 import { addUsersToEventValidation, createEventValidation, selectEventByUserValidation, selectEventValidation, updateEventValidation } from '../Validators/eventValidator';
 import { validatorMiddleware } from '../common/middleware/validator-middleware';
 import { JwtPayload } from 'jsonwebtoken';
