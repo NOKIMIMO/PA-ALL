@@ -24,6 +24,9 @@ export default class AgUseCase{
             const [ags, totalCount] = await query.getManyAndCount()
             return {ags,totalCount}
         }
+        async answerAg(agId:number,userId:number): Promise<any>{
+            return {message : 'TBD'}
+        }
     
     
         async createAg(data: createAgValidationRequest,userid:number): Promise<Ag> {
@@ -32,9 +35,9 @@ export default class AgUseCase{
             return await agRepository.save(newAg);
 
         }
-        async getAgById(data:selectedAgRequest): Promise<Ag|null>{
+        async getAgById(id:number): Promise<Ag|null>{
             const repo = this.db.getRepository(Ag)
-            const ag = await repo.findOneBy({ id: data.agId })
+            const ag = await repo.findOneBy({ id })
             if (!ag) {
                 throw new CustomError(404, 'Ag not found')
             }
