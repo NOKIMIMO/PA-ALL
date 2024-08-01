@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { FaPaw } from 'react-icons/fa';
 import ContactForm from './ContactForm';
 import UserBtn from './UserBtn';
@@ -8,10 +9,8 @@ import ThemeSwitcher from './ThemeSwitcher';
 
 export default function Header() {
     const { user } = useUser();
-
     const isAdmin = user?.role.toLowerCase() === 'admin' || user?.role.toLowerCase() === 'super_admin';
     const isLogged = user?.role.toLowerCase() === 'user' || isAdmin;
-
 
     return (
         <div className="navbar bg-neutral fixed top-0 left-0 w-full z-50">

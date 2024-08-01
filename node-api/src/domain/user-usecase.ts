@@ -42,7 +42,9 @@ export class UserUseCase {
         const userRepository = db.getRepository(User)
         return await userRepository.save({
             email: email,
-            password: hashedPassword
+            password: hashedPassword,
+            lastname: "jo",
+            firstname: "jo",
         });
     }
     async validateToken(token:string): Promise<User | null>{

@@ -16,13 +16,11 @@ const router = Router();
 router.post('/signup', 
 validatorMiddleware(createUserValidation,'body'),
 async (req: Request, res: Response) => {
-
     try {
         const createUserRequest = req.body
         const hashedPassword = await hash(createUserRequest.password, 10);
         const UserUsecase = new UserUseCase(db);
         const user = await UserUsecase.createUser(createUserRequest.email,hashedPassword);
-        
         const secret = process.env.JWT_SECRET ?? ""
         const token = sign({ userId: user.id, email: user.email }, secret, { expiresIn: '1d' });
         await db.getRepository(Token).save({ token: token, user: user })
