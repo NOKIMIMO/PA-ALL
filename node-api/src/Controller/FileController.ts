@@ -50,7 +50,6 @@ router.post('/',
             return;
         }
         const createFileRequest = {...req.body, ...req.file};
-
         if (createFileRequest.encrypted ===true && !createFileRequest.masterPassword) {
             res.status(400).send("Master password is required to encrypt file");
             return;

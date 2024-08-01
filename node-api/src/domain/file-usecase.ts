@@ -39,17 +39,23 @@ export class FileUseCase {
                     throw new CustomError(400, "Parent file is not a folder")
                 }
             }
+            const extension = data.mimetype.split('/')[1] || 'other'
+            //check if name finishes with extension
+            if (!data.name.endsWith(extension)) {
+                data.name = data.name + '.' + extension
+            }
             const newFile = fileRepo.create({
                 name: data.name,
                 path: data.path,
-                type: data.type,
+                type: extension,
                 size: data.size,
                 userId: userId,
                 // extension: data.mimetype.split('/').pop(),
-                extension: data.name.split('.')[1] || 'txt',
+                extension: extension,
                 readOnly: data.readOnly || false,
                 parentId: data.parentId,
-            })            
+            })
+            console.log(newFile)            
             if (data.encrypted === true && data.masterPassword) {
                 //use lib to encrypt local file
                 // Encryption
