@@ -4,7 +4,7 @@ export const taskCreateValidation = Joi.object({
     title: Joi.string().required(),
     description: Joi.string().required(),
     dueDate: Joi.date().required(),
-    priority: Joi.number().required(),
+    priority: Joi.number().optional(),
     eventId: Joi.number().required(),
     userId: Joi.number().optional()
 }).options({ abortEarly: false });

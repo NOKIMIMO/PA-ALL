@@ -3,14 +3,25 @@ import { Task } from './../database/models/task';
 import { UserTask } from './../database/models/user-task';
 import { TaskCreateRequest, TaskSelectOneRequest, TaskUpdateRequest } from '../Validators/taskValidator';
 import { ListItemRequest } from '../Validators/commonValidator';
+import { CustomError } from '../common/error/customError';
 export class TaskUseCase {
     constructor(private readonly db:DataSource) {};
 
     async createTask(task: TaskCreateRequest): Promise<Task> {
         const taskRepository = this.db.getRepository(Task);
+        //if priority not null, check task exist and create the task with the link
         const newTask = taskRepository.create(task);
         await taskRepository.save(newTask);
         return newTask;
+    }
+    async finishTask(taskId: number): Promise<void> {
+        const taskRepository = this.db.getRepository(Task);
+        const task = await taskRepository.findOneBy({id: taskId});
+        if (!task) {
+            throw new Error('Task not found');
+        }
+        task.completed = true;
+        await taskRepository.save(task);
     }
 
     async updateTask(taskId: number,task: TaskUpdateRequest): Promise<Task> {
@@ -39,11 +50,12 @@ export class TaskUseCase {
         return taskToUpdate;
     }
 
-    async selectOneTask(taskId: TaskSelectOneRequest): Promise<Task> {
+    async selectOneTask(taskId: number): Promise<Task> {
         const taskRepository = this.db.getRepository(Task);
-        const task = await taskRepository.findOneBy({id: taskId.taskId});
+        console.log(taskId)
+        const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404,'Task not found');
         }
         return task;
     }
@@ -55,7 +67,7 @@ export class TaskUseCase {
             .where('task.id IN (:...tasksId)', { tasksId });
         const tasks = await query.getMany();
         if (!tasks) {
-            throw new Error('Tasks not found');
+            throw new CustomError(404,'Task not found');
         }
         return tasks;
     }
@@ -65,12 +77,12 @@ export class TaskUseCase {
         const taskRepository = this.db.getRepository(Task);
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404,'Task not found');
         }
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTask = taskUserRepository.findBy({userId, taskId});
         if ((await userTask).length > 0) {
-            throw new Error('Task already assigned to user');
+            throw new CustomError(400,'Task already assigned to user');
         }
         const newUserTask = taskUserRepository.create({userId, taskId});
         await taskUserRepository.save(newUserTask);
@@ -81,7 +93,7 @@ export class TaskUseCase {
         const taskRepository = this.db.getRepository(Task);
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404,'Task not found');
         }
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTasks = await taskUserRepository.findBy({taskId});
@@ -95,7 +107,7 @@ export class TaskUseCase {
         const taskRepository = this.db.getRepository(Task);
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404,'Task not found');
         }
         await taskRepository.remove(task);
     }
@@ -104,7 +116,7 @@ export class TaskUseCase {
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTask = await taskUserRepository.findOneBy({taskId, userId});
         if (!userTask) {
-            throw new Error('Task not assigned to user');
+            throw new CustomError(404,'Task not found');
         }
         await taskUserRepository.remove(userTask);
     }
@@ -113,7 +125,7 @@ export class TaskUseCase {
         const taskRepository = this.db.getRepository(Task);
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404,'Task not found');
         }
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTasks = await taskUserRepository.findBy({taskId});
@@ -161,7 +173,7 @@ export class TaskUseCase {
         const taskRepository = this.db.getRepository(Task);
         const task = await taskRepository.find();
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404,'Task not found');
         }
         const taskUserRepository = this.db.getRepository(UserTask);
         //build query

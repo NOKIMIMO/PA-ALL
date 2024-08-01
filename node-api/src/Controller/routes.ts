@@ -37,8 +37,8 @@ export const routes = (app: Express) => {
     app.use('/api/v1/files', fileRoutes);
     app.use('/api/v1/votes', voteRoutes); // Utilisez le contrôleur de votes
     app.use('/api/v1/ag', AgController);
-    app.use('/api/v1/ag-task', AgTaskController);
-    app.use('/api/v1/task', TaskController);
+    app.use('/api/v1/ag-tasks', AgTaskController);
+    app.use('/api/v1/tasks', TaskController);
     app.use('/api/v1/contact', contactRoutes); // Ajoutez cette ligne
     app.post('/api/v1/create-checkout-session', async (req, res) => {
         try {

@@ -42,11 +42,15 @@ export const giveRoleToUserValidation = Joi.object({
 export const createUserValidation = Joi.object<CreateUserValidationRequest>({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
+    firstname: Joi.string().required(),
+    lastname: Joi.string().required(),
 }).options({ abortEarly: false });
 
 export interface CreateUserValidationRequest  {
     email: string
     password: string
+    firstname: string
+    lastname: string
 }
 
 export const LoginUserValidation = Joi.object<LoginUserValidationRequest>({

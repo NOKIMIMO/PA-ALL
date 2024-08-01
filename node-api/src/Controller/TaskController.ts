@@ -24,6 +24,11 @@ router.get('/',
             res.json(tasks);
             
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -34,12 +39,19 @@ router.get('/:taskId',
     authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
-        const taskId = parseInt(req.params.id);
+        const taskId = parseInt(req.params.taskId);
+        console.log(taskId)
+        console.log(req.params)
         try {
             const taskUseCase = new TaskUseCase(db);
-            const task = await taskUseCase.selectOneTask({taskId});
+            const task = await taskUseCase.selectOneTask(taskId);
             res.json({data : task});
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -56,6 +68,11 @@ router.get('/event/:eventId',
             const tasks = await taskUseCase.ListTaskOfEvent(eventId);
             res.json({data : tasks}).status(200);
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -73,6 +90,11 @@ router.get('/user/:userId',
             const tasks = await taskUseCase.listTaskOfUser(userId);
             res.json({data : tasks}).status(200);
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -87,12 +109,37 @@ router.get('/self',
             const tasks = await taskUseCase.listTaskOfUser(req.user!.userId);
             res.json(tasks).status(200);
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
         }
     })
 
+router.get('/:taskId/finished',
+    authMiddleware,
+    validatorMiddleware(taskSelectOneValidation, 'params'),
+    async (req: Request, res: Response): Promise<void> => {
+        const taskId = parseInt(req.params.id);
+        try {
+            const taskUseCase = new TaskUseCase(db);
+            await taskUseCase.finishTask(taskId);
+            res.json({ message: 'Task finished' }).status(200);
+        } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
+            console.log(error);
+            res.status(500);
+            res.json({ error: 'Internal error' });
+        }
+    })
 
 router.get('/:taskId/assigned',
     authMiddleware,
@@ -104,6 +151,11 @@ router.get('/:taskId/assigned',
             const users = await taskUseCase.listUserOfTask(taskId);
             res.json(users).status(200);
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -120,6 +172,11 @@ router.post('/',
             await taskUseCase.createTask(task);
             res.json({ message: 'Task created' }).status(200);
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -138,6 +195,11 @@ router.patch('/:taskId',
             await taskUseCase.updateTask(taskId, task);
             res.json({ message: 'Task updated' });
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -154,6 +216,11 @@ router.delete('/:taskId',
             await taskUseCase.removeTask(taskId);
             res.json({ message: 'Task removed' });
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -173,6 +240,11 @@ router.get('/:taskId/assign/:userId',
             await taskUseCase.assignTask(taskId, userId);
             res.json({ message: 'Task assigned' });
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -190,6 +262,11 @@ router.post('/:taskId/assign',
             await taskUseCase.assignTaskToMultipleUsers(taskId, userId);
             res.json({ message: 'Task assigned' });
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -209,6 +286,11 @@ router.delete('/:taskId/unassign/:userId',
             await taskUseCase.removeTaskFromUser(taskId, userId);
             res.json({ message: 'Task removed' });
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });
@@ -227,6 +309,11 @@ router.post('/:taskId/unassign',
             await taskUseCase.removeTaskFromMultipleUsers(taskId, userId);
             res.json({ message: 'Task removed' });
         } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
             console.log(error);
             res.status(500);
             res.json({ error: 'Internal error' });

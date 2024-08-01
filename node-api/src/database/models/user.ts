@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, UpdateDateColumn, ManyToMany } from "typeorm";
 import { Token } from "./token";
 import { Vote } from "./vote"
 import { Event } from "./event"
@@ -6,6 +6,7 @@ import { Post } from "./post"
 import  {Comment} from "./comment"
 import {File} from "./file"
 import { UserVote } from "./userVote";
+import { BanTicket } from "./banTicket";
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
@@ -34,6 +35,13 @@ export class User {
 
     @Column({default: true})
     active: boolean
+
+    @OneToMany(() => BanTicket, banTicket => banTicket.user)
+    banTickets: BanTicket[];
+
+    @OneToMany(() => BanTicket, banTicket => banTicket.moderator)
+    banTicketsIssued: BanTicket[];
+
     @CreateDateColumn({name: 'created_at', type: 'timestamp with time zone' })
     createdAt: Date
 
@@ -59,7 +67,7 @@ export class User {
          tokens: Token[],role: string,events: Event[],
          active: boolean,posts: Post[],comments: Comment[],
          files: File[], userVotes: UserVote[],
-         lastname: string, firstname: string) {
+         lastname: string, firstname: string, banTickets: BanTicket[], banTicketsIssued: BanTicket[]) {
         this.id = id;
         this.email = email; 
         this.password = password;
@@ -75,5 +83,7 @@ export class User {
         this.userVotes=userVotes;
         this.lastname=lastname;
         this.firstname=firstname;
+        this.banTickets=banTickets;
+        this.banTicketsIssued=banTicketsIssued;
     }
 };

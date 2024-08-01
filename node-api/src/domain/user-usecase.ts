@@ -38,13 +38,13 @@ export class UserUseCase {
     return { users, totalCount };
 }
 
-    async createUser(email:string,hashedPassword:string): Promise<User>{
+    async createUser(email:string,hashedPassword:string,firstname:string,lastname:string): Promise<User>{
         const userRepository = db.getRepository(User)
         return await userRepository.save({
             email: email,
             password: hashedPassword,
-            lastname: "jo",
-            firstname: "jo",
+            lastname: firstname,
+            firstname: lastname,
         });
     }
     async validateToken(token:string): Promise<User | null>{
