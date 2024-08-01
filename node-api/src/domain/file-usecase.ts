@@ -97,6 +97,7 @@ export class FileUseCase {
 
     async updateFile(fileId : number,userId: number,fileRequest: UpdateFileRequest): Promise<File> {
         try {
+            
             const fileRepo = this.dataSource.getRepository(File)
             const file = await fileRepo.findOneBy({ id: fileId })
             if (!file) {
@@ -110,11 +111,11 @@ export class FileUseCase {
                 if(fileRequest.name){
                     file.name = fileRequest.name
                 }
-            }
-            if (file.type === 'file') {
-
+            }else{
                 if (fileRequest.name) {
-                    file.name = fileRequest.name
+                    //keep extension
+                    const extension = file.name.split('.').pop()
+                    file.name = fileRequest.name + '.' + extension
                 }
                 if (fileRequest.type) {
                     file.type = fileRequest.type

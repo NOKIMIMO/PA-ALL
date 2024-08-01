@@ -1,4 +1,4 @@
-import { HiFolder, HiFolderOpen, HiDocument, HiDocumentText, HiPhoto, HiOutlinePlus, HiOutlineTrash, HiLockClosed  } from "react-icons/hi2";
+import { HiFolder, HiFolderOpen, HiDocument, HiDocumentText, HiPhoto, HiOutlinePlus, HiOutlineTrash, HiLockClosed } from "react-icons/hi2";
 import { File, Folder as FolderType } from "../interfaces/type";
 
 interface FolderProps {
@@ -10,9 +10,10 @@ interface FolderProps {
     onFileClick: (file: File) => void;
     onAddFile: (parentId: number | null) => void;
     onDeleteFile: (fileId: number) => void;
+    onRenameFile: (fileId: number) => void;
 }
 
-export default function Folder({ id, name, files, isOpen, onToggle, onFileClick, onAddFile, onDeleteFile }: FolderProps) {
+export default function Folder({ id, name, files, isOpen, onToggle, onFileClick, onAddFile, onDeleteFile, onRenameFile }: FolderProps) {
 
     const renderFileIcon = (type: string) => {
         switch (type) {
@@ -42,6 +43,7 @@ export default function Folder({ id, name, files, isOpen, onToggle, onFileClick,
                 >
                     <HiOutlinePlus />
                 </button>
+
                 {id && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onDeleteFile(id!); }}
@@ -49,8 +51,15 @@ export default function Folder({ id, name, files, isOpen, onToggle, onFileClick,
                     >
                         <HiOutlineTrash />
                     </button>
-                )
-                }
+                )}
+                {id && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onRenameFile(id!); }}
+                        className="ml-2 p-1 border rounded-md outline-none hover:outline focus:outline-blue-500"
+                    >
+                        <HiDocumentText />
+                    </button>
+                )}
             </summary>
             <ul className="ml-4">
                 {files.map((item) => (
@@ -65,15 +74,21 @@ export default function Folder({ id, name, files, isOpen, onToggle, onFileClick,
                                 onFileClick={onFileClick}
                                 onAddFile={onAddFile}
                                 onDeleteFile={onDeleteFile}
+                                onRenameFile={onRenameFile}
                             />
                         ) : (
                             <a onClick={() => onFileClick(item)} className="cursor-pointer flex items-center">
-                                {item.encrypted !== true ? 
-                                ( renderFileIcon(item.type))
-                                :
-                                ( <HiLockClosed/> )
+                                {item.encrypted !== true ?
+                                    (renderFileIcon(item.type))
+                                    :
+                                    (<HiLockClosed />)
                                 }
-                                <span className="ml-2">{item.name}</span>
+                                <span className="ml-2">{item.name} <button
+                                    onClick={(e) => { e.stopPropagation(); onRenameFile(item.id); }}
+                                    className="ml-2 p-1 border rounded-md outline-none hover:outline focus:outline-blue-500"
+                                >
+                                    <HiDocumentText />
+                                </button></span>
                             </a>
                         )}
                     </li>

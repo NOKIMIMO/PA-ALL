@@ -1,7 +1,7 @@
 import { CustomError } from "../commons/Error";
 
 interface IFileService {
-    uploadFile(file: File | null, name: string, type: "folder" | "pdf" | "txt" | "png" | "jpg" | "other", parentId: number, encrypted: boolean, MasterPassword:String): Promise<any>;
+    uploadFile(file: File | null, name: string, isFolder:boolean, parentId: number, encrypted: boolean, MasterPassword:String): Promise<any>;
     getFile(id: number): Promise<any>;
     getFilesFromUser(userId: number, param: GetFileRequestQuery): Promise<any>;
     deleteFile(id: number): Promise<any>;
@@ -63,10 +63,10 @@ class FileService implements IFileService {
         return data;
     }
 
-    async uploadFile(file: File | null, name: string, type: "folder" | "pdf" | "txt" | "png" | "jpg" | "other", parentId: number|null, encrypted: boolean, MasterPassword:String): Promise<any> {
+    async uploadFile(file: File | null, name: string, isFolder: boolean, parentId: number|null, encrypted: boolean, MasterPassword:String): Promise<any> {
         const formData = new FormData();
         //folder type does not have file
-        if (file != null && type !== 'folder') {
+        if (file != null && !isFolder) {
             formData.append('file', file);
             if (parentId !== null) {
                 formData.append('parentId', parentId.toString());
@@ -76,7 +76,7 @@ class FileService implements IFileService {
         if(MasterPassword && MasterPassword!= ""){formData.append('masterPassword', MasterPassword.toString());}
         
         formData.append('name', name);
-        formData.append('type', type);
+        formData.append('type', isFolder? 'folder' : 'file');
         try {
             const response = await fetch('/api/v1/files', {
                 method: 'POST',
@@ -163,7 +163,21 @@ class FileService implements IFileService {
         const url = URL.createObjectURL(blob);
         return url;
     }
-
+    async renameFile(id: number, newName: string): Promise<any> {
+        const response = await fetch(`/api/v1/files/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ name: newName })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            return new CustomError(response.status, data.error || 'Something went wrong');
+        }   
+        return data;
+    }
 }
 
 export default new FileService();

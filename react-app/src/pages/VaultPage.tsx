@@ -10,13 +10,16 @@ import DeleteButton from "../components/FileDeleteBtn";
 import CryptButton from "../components/FileCryptBtn";
 import DLButton from "../components/FileDLBtn";
 import PreviewFile from "../components/FilePreview";
+import FileRenameModal from "../components/FileRenameModal";
 
 export default function VaultPage() {
     const [userData, setUserData] = useState<any>(null);
     const [folders, setFolders] = useState<FolderType[]>([]);
     const [selectedFile, setSelectedFile] = useState<TypedFile | null>(null);
+    const [selectToRenameFile, setSelectToRenameFile] = useState<number | null>(null);
     const [showPreview, setShowPreview] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
 
     const fetchUserData = useCallback(async () => {
@@ -104,11 +107,15 @@ export default function VaultPage() {
         setIsModalOpen(true);
     };
     const handleDeleteFolder = async (folderId: number) => {
+        //do a confirmatiuon alert
         await FileService.deleteFile(folderId);
         await fetchUserFiles(userData.id);
     };
+    const handleRenameFile = async (fileId: number) => {
+        setSelectToRenameFile(fileId);
+        setIsRenameModalOpen(true);
+    }
     const handleCryptFile = async (fileId: number,pwd:string) => {
-        // show modal to get password to encrypt file
 
         await FileService.cryptFile(fileId,pwd);
         await fetchUserFiles(userData.id);
@@ -143,11 +150,23 @@ export default function VaultPage() {
             alert('Failed to download file');
         }
     };
+
+    const handleModalRenameSubmit = async (newName:string) => {
+        try {
+            // rename file
+            await FileService.renameFile(selectToRenameFile!, newName);
+            await fetchUserFiles(userData.id);
+            // Close the modal
+            setIsRenameModalOpen(false);
+        } catch (err) {
+            alert("Error fetching user data");
+        }
+    };
     
-    const handleModalSubmit = async (name: string, type: "folder" | "pdf" | "txt" | "png" | "jpg" | "other", encrypted: boolean, MasterPassword:string, file: File) => {
+    const handleModalSubmit = async (name: string, isFolder:boolean, encrypted: boolean, MasterPassword:string, file: File) => {
         try {
             // Upload the file
-            await FileService.uploadFile(file, name, type, currentFolderId, encrypted,MasterPassword);
+            await FileService.uploadFile(file, name, isFolder, currentFolderId, encrypted,MasterPassword);
             await fetchUserFiles(userData.id);
             // Close the modal
             setIsModalOpen(false);
@@ -172,6 +191,7 @@ export default function VaultPage() {
                                     onFileClick={handleFileClick}
                                     onAddFile={handleAddFile}
                                     onDeleteFile={handleDeleteFolder}
+                                    onRenameFile={handleRenameFile}
                                 />
                             </li>
                         ))}
@@ -216,6 +236,17 @@ export default function VaultPage() {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleModalSubmit}
             />
+            {folders.length > 0 && folders[0].files.length > 0 && (
+                <FileRenameModal
+                    isOpen={isRenameModalOpen}
+                    oldName={folders[0].files.find((file) => file.id === selectToRenameFile)?.name || ''}
+                    onClose={() => setIsRenameModalOpen(false)}
+                    onSubmit={handleModalRenameSubmit}
+                />
+            )}
+
+    
+
         </div>
     );
 }

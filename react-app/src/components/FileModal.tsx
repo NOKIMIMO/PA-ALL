@@ -3,18 +3,18 @@ import { useState } from "react";
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (name: string, type: "folder" | "pdf" | "txt" | "png" | "jpg" | "other", encrypted: boolean, MasterPassword:string, file: File) => void;
+    onSubmit: (name: string, isFolder: boolean, encrypted: boolean, MasterPassword: string, file: File) => void;
 }
 
 export default function Modal({ isOpen, onClose, onSubmit }: ModalProps) {
     const [name, setName] = useState("");
-    const [type, setType] = useState<"folder" | "pdf" | "txt" | "png" | "jpg" | "other">("txt");
+    const [isFolder, setIsFolder] = useState(false);
     const [encrypted, setEncrypted] = useState(false);
     const [file, setFile] = useState<File | undefined>();
     const [MasterPassword, setMasterPassword] = useState("");
 
     const handleSubmit = () => {
-        onSubmit(name, type, encrypted, MasterPassword, file!);
+        onSubmit(name, isFolder, encrypted, MasterPassword, file!);
         onClose();
     };
 
@@ -34,27 +34,17 @@ export default function Modal({ isOpen, onClose, onSubmit }: ModalProps) {
                     />
                 </div>
                 <div className="mb-2">
-                    <label className="block">File Type</label>
-                    <select
-                        value={type}
-                        onChange={(e) => {
-                            const selectedType = e.target.value as "folder" | "pdf" | "txt" | "png" | "jpg" | "other";
-                            setType(selectedType);
-                            if (selectedType === "folder") {
-                                setFile(undefined); // Clear the file if type is folder
-                                setEncrypted(false); // Clear the encrypted state if type is folder
-                            }
-                        }}
-                        className="border p-1 rounded w-full"
-                    >
-                        <option value="folder">Folder</option>
-                        <option value="txt">Text</option>
-                        <option value="pdf">PDF</option>
-                        <option value="png">PNG</option>
-                        <option value="jpg">JPG</option>
-                        <option value="other">Other</option>
-                    </select>
+                    <label className="block">
+                        <input
+                            type="checkbox"
+                            checked={isFolder}
+                            onChange={(e) => (setIsFolder(e.target.checked), setMasterPassword("") , setEncrypted(false))}
+                            
+                        />
+                        Folder 
+                    </label> 
                 </div>
+
                 <div className="mb-2">
                     <label className="block">Upload File</label>
                     <input
@@ -67,7 +57,7 @@ export default function Modal({ isOpen, onClose, onSubmit }: ModalProps) {
                             }
                         }}
                         className="border p-1 rounded w-full"
-                        disabled={type === "folder"}
+                        disabled={isFolder}
                     />
                 </div>
                 <div className="mb-4">
@@ -76,19 +66,19 @@ export default function Modal({ isOpen, onClose, onSubmit }: ModalProps) {
                             type="checkbox"
                             checked={encrypted}
                             onChange={(e) => (setEncrypted(e.target.checked), setMasterPassword(""))}
-                            disabled={type === "folder"}
+                            disabled={isFolder}
                         />
                         Encrypted
                     </label>
                     <div className="mb-2">
-                    <label className="block">Master Password</label>
-                    <input
-                        type="password"
-                        value={MasterPassword}
-                        onChange={(e) => setMasterPassword(e.target.value)}
-                        className="border p-1 rounded w-full"
-                        disabled={type === "folder" || !encrypted}   
-                    />
+                        <label className="block">Master Password</label>
+                        <input
+                            type="password"
+                            value={MasterPassword}
+                            onChange={(e) => setMasterPassword(e.target.value)}
+                            className="border p-1 rounded w-full"
+                            disabled={isFolder || !encrypted}
+                        />
                     </div>
                 </div>
                 <div className="flex justify-end">
