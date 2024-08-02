@@ -13,7 +13,7 @@ export interface TaskCreateRequest {
     title: string
     description: string
     dueDate: Date
-    priority: number
+    priority?: number
     eventId: number
     userId?: number
 }

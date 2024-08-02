@@ -12,6 +12,17 @@ export interface SelectUserRequest  {
     id: number
 }
 
+export interface UserResponse {
+    id: number
+    email: string
+    role: string
+    lastname: string
+    firstname: string
+    active: boolean
+    createdAt: Date
+    updatedAt: Date
+}
+
 export const selectUserValidation = Joi.object({
     id: Joi.number().required()
 })

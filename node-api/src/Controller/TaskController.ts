@@ -1,12 +1,12 @@
 import { Request, Response, Router } from 'express';
-import { listItemValidation } from '../Validators/commonValidator';
+import { listItemValidation, selectItemValidation } from '../Validators/commonValidator';
 import { generateValidationErrorMessage } from '../common/generate-validation-msg';
 import { db } from '../database/db';
 import { authMiddleware } from '../common/middleware/auth-middleware';
 import { accessMiddleware } from '../common/middleware/access-middleware';
 import { user_access_type } from '../common/enum/access-type';
 import { validatorMiddleware } from '../common/middleware/validator-middleware';
-import { taskAssignMultipleValidation, taskAssignValidation, taskCreateValidation, taskSelectOneValidation } from '../Validators/taskValidator';
+import { taskAssignMultipleValidation, taskAssignValidation, taskCreateValidation, taskSelectOneValidation, taskUpdateValidation } from '../Validators/taskValidator';
 import { JwtPayload } from 'jsonwebtoken';
 import { CustomError } from '../common/error/customError';
 import { TaskUseCase } from '../domain/task-usecase';
@@ -35,34 +35,12 @@ router.get('/',
         }
     })
 
-router.get('/:taskId',
-    authMiddleware,
-    validatorMiddleware(taskSelectOneValidation, 'params'),
-    async (req: Request, res: Response): Promise<void> => {
-        const taskId = parseInt(req.params.taskId);
-        console.log(taskId)
-        console.log(req.params)
-        try {
-            const taskUseCase = new TaskUseCase(db);
-            const task = await taskUseCase.selectOneTask(taskId);
-            res.json({data : task});
-        } catch (error) {
-            if (error instanceof CustomError) {
-                res.status(error.code);
-                res.json({ error: error.message });
-                return;
-            }
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
-        }
-    })
 
-router.get('/event/:eventId',
+router.get('/event/:itemId',
     authMiddleware,
-    validatorMiddleware(taskSelectOneValidation, 'params'),
+    validatorMiddleware(selectItemValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
-        const eventId = parseInt(req.params.id);
+        const eventId = parseInt(req.params.itemId);
         try {
             const taskUseCase = new TaskUseCase(db);
             const tasks = await taskUseCase.ListTaskOfEvent(eventId);
@@ -79,11 +57,11 @@ router.get('/event/:eventId',
         }
     })
 
-router.get('/user/:userId',
+router.get('/user/:itemId',
     authMiddleware,
-    validatorMiddleware(taskSelectOneValidation, 'params'),
+    validatorMiddleware(selectItemValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
-        const userId = parseInt(req.params.id);
+        const userId = parseInt(req.params.itemId);
         const task = req.body;
         try {
             const taskUseCase = new TaskUseCase(db);
@@ -120,11 +98,35 @@ router.get('/self',
         }
     })
 
+    
+router.get('/:taskId',
+    authMiddleware,
+    validatorMiddleware(taskSelectOneValidation, 'params'),
+    async (req: Request, res: Response): Promise<void> => {
+        const taskId = parseInt(req.params.taskId);
+        console.log(taskId)
+        console.log(req.params)
+        try {
+            const taskUseCase = new TaskUseCase(db);
+            const task = await taskUseCase.selectOneTask(taskId);
+            res.json({data : task});
+        } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
+            console.log(error);
+            res.status(500);
+            res.json({ error: 'Internal error' });
+        }
+    })
+
 router.get('/:taskId/finished',
     authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
-        const taskId = parseInt(req.params.id);
+        const taskId = parseInt(req.params.taskId);
         try {
             const taskUseCase = new TaskUseCase(db);
             await taskUseCase.finishTask(taskId);
@@ -141,11 +143,32 @@ router.get('/:taskId/finished',
         }
     })
 
+router.get('/:taskId/unfinished',
+    authMiddleware,
+    validatorMiddleware(taskSelectOneValidation, 'params'),
+    async (req: Request, res: Response): Promise<void> => {
+        const taskId = parseInt(req.params.taskId);
+        try {
+            const taskUseCase = new TaskUseCase(db);
+            await taskUseCase.unfinishTask(taskId);
+            res.json({ message: 'Task unfinished' }).status(200);
+        } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code);
+                res.json({ error: error.message });
+                return;
+            }
+            console.log(error);
+            res.status(500);
+            res.json({ error: 'Internal error' });
+        }
+    })
+
 router.get('/:taskId/assigned',
     authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
-        const taskId = parseInt(req.params.id);
+        const taskId = parseInt(req.params.taskId);
         try {
             const taskUseCase = new TaskUseCase(db);
             const users = await taskUseCase.listUserOfTask(taskId);
@@ -185,10 +208,10 @@ router.post('/',
 
 router.patch('/:taskId',
     authMiddleware,
-    validatorMiddleware(taskCreateValidation, 'body'),
+    validatorMiddleware(taskUpdateValidation, 'body'),
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
-        const taskId = parseInt(req.params.id);
+        const taskId = parseInt(req.params.taskId);
         const task = req.body;
         try {
             const taskUseCase = new TaskUseCase(db);
@@ -210,7 +233,7 @@ router.delete('/:taskId',
     authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
-        const taskId = parseInt(req.params.id);
+        const taskId = parseInt(req.params.taskId);
         try {
             const taskUseCase = new TaskUseCase(db);
             await taskUseCase.removeTask(taskId);
@@ -255,8 +278,10 @@ router.post('/:taskId/assign',
     validatorMiddleware(taskSelectOneValidation, 'params'),
     validatorMiddleware(taskAssignMultipleValidation , 'body'),
     async (req: Request, res: Response): Promise<void> => {
+        console.log(req.params)
+        console.log(req.body)
         const taskId = parseInt(req.params.taskId);
-        const userId = req.body.userId;
+        const userId = req.body.userIds;
         try {
             const taskUseCase = new TaskUseCase(db);
             await taskUseCase.assignTaskToMultipleUsers(taskId, userId);
@@ -303,7 +328,7 @@ router.post('/:taskId/unassign',
     validatorMiddleware(taskAssignMultipleValidation , 'body'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
-        const userId = req.body.userId;
+        const userId = req.body.userIds;
         try {
             const taskUseCase = new TaskUseCase(db);
             await taskUseCase.removeTaskFromMultipleUsers(taskId, userId);
@@ -320,7 +345,7 @@ router.post('/:taskId/unassign',
         }
     })
 
-    router.post('/:taskId/clear',
+    router.get('/:taskId/clear',
         authMiddleware,
         validatorMiddleware(taskSelectOneValidation, 'params'),
         async (req: Request, res: Response): Promise<void> => {
@@ -330,6 +355,11 @@ router.post('/:taskId/unassign',
                 await taskUseCase.clearTask(taskId);
                 res.json({ message: 'Task cleared' });
             } catch (error) {
+                if (error instanceof CustomError) {
+                    res.status(error.code);
+                    res.json({ error: error.message });
+                    return;
+                }
                 console.log(error);
                 res.status(500);
                 res.json({ error: 'Internal error' });
