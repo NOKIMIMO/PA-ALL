@@ -21,7 +21,7 @@ router.get('/',
         try {
             const taskUseCase = new TaskUseCase(db);
             const tasks = await taskUseCase.ListAllTasks(listUserRequest);
-            res.json(tasks);
+            res.json({tasks : tasks});
             
         } catch (error) {
             if (error instanceof CustomError) {
@@ -44,7 +44,7 @@ router.get('/event/:itemId',
         try {
             const taskUseCase = new TaskUseCase(db);
             const tasks = await taskUseCase.ListTaskOfEvent(eventId);
-            res.json({data : tasks}).status(200);
+            res.json({tasks : tasks}).status(200);
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code);
@@ -66,7 +66,7 @@ router.get('/user/:itemId',
         try {
             const taskUseCase = new TaskUseCase(db);
             const tasks = await taskUseCase.listTaskOfUser(userId);
-            res.json({data : tasks}).status(200);
+            res.json({tasks : tasks}).status(200);
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code);
@@ -85,7 +85,7 @@ router.get('/self',
         try {
             const taskUseCase = new TaskUseCase(db);
             const tasks = await taskUseCase.listTaskOfUser(req.user!.userId);
-            res.json(tasks).status(200);
+            res.json({tasks : tasks}).status(200);
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code);
@@ -109,7 +109,7 @@ router.get('/:taskId',
         try {
             const taskUseCase = new TaskUseCase(db);
             const task = await taskUseCase.selectOneTask(taskId);
-            res.json({data : task});
+            res.json({tasks : task});
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code);
@@ -172,7 +172,7 @@ router.get('/:taskId/assigned',
         try {
             const taskUseCase = new TaskUseCase(db);
             const users = await taskUseCase.listUserOfTask(taskId);
-            res.json(users).status(200);
+            res.json({users : users}).status(200);
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code);
