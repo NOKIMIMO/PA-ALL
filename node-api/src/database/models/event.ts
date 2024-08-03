@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 import { User } from "./user";
 import { Task } from "./task";
+import { EventManager } from "./eventMannager";
 
 @Entity()
 export class Event {
@@ -10,6 +11,7 @@ export class Event {
     @Column()
     title: string;
 
+    //creator
     @Column({ name: "userId" })
     userId: number; // Storing only the user id
 
@@ -35,6 +37,9 @@ export class Event {
     @Column({ default: true })
     active: boolean;
 
+    @OneToMany(()=> EventManager, eventManager => eventManager.event)
+    eventManager: EventManager[];
+
     @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
     createdAt: Date;
 
@@ -44,7 +49,7 @@ export class Event {
     constructor(id: number, title: string, userId: number,
          user: User, description: string, data_access_type: string,
           event_date: Date, location: string, createdAt: Date, updatedAt: Date,
-           active: boolean, tasks: Task[]) {
+           active: boolean, tasks: Task[], eventManager: EventManager[]) {
         this.id = id;
         this.title = title;
         this.user = user;
@@ -57,5 +62,6 @@ export class Event {
         this.userId = userId;
         this.active = active;
         this.tasks = tasks;
+        this.eventManager = eventManager;
     }
 }

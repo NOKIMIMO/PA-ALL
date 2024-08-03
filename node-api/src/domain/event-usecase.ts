@@ -6,6 +6,7 @@ import { createEventValidationRequest, selectEventRequest, updateEventRequest } 
 import { User } from "../database/models/user";
 import { user_access_type } from "../common/enum/access-type";
 import { UsersEvents } from "../database/models/users-events";
+import { EventManager } from "../database/models/eventMannager";
 
 export default class EventUseCase {
 
@@ -45,6 +46,8 @@ export default class EventUseCase {
     async createEvent(data: createEventValidationRequest,userid:number): Promise<Event> {
         const eventRepository = this.db.getRepository(Event);
         const newEvent = eventRepository.create({...data,user :{id:userid}});
+        const eventMannagerRepository = this.db.getRepository(EventManager);
+        const eventMannager = eventMannagerRepository.create({event:newEvent, user:{id:userid}});
         return await eventRepository.save(newEvent);
     }
     async getEventById(data:selectEventRequest): Promise<Event|null>{

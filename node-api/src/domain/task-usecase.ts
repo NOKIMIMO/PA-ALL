@@ -5,6 +5,7 @@ import { TaskCreateRequest, TaskSelectOneRequest, TaskUpdateRequest } from '../V
 import { ListItemRequest } from '../Validators/commonValidator';
 import { CustomError } from '../common/error/customError';
 import { User } from '../database/models/user';
+import { Event } from '../database/models/event';
 import { UserResponse } from '../Validators/userValidator';
 export class TaskUseCase {
     constructor(private readonly db:DataSource) {};
@@ -20,8 +21,14 @@ export class TaskUseCase {
                 throw new CustomError(404,'Task not found');
             }
         }
-        console.log({max_end_date:dueDate , eventId ,title , description, priority: taskParent, priorityId: priority})
-        console.log("##################")
+        const eventRepository = this.db.getRepository(Event);
+        const event = await eventRepository.findOneBy({id: eventId});
+        if (!event) {
+            throw new CustomError(404,'Event not found');
+        }
+        if (event.event_date < dueDate) {
+            throw new CustomError(400,'Due date is after event end date');
+        }
         const newTask = taskRepository.create({max_end_date:dueDate , eventId ,title , description, priority: taskParent, priorityId: priority});
         await taskRepository.save(newTask);
         return newTask;
