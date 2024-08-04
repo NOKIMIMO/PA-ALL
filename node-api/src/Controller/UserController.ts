@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { selectUserValidation, updateUserValidation } from '../Validators/userValidator';
+import { ListUserValidation, selectUserValidation, updateUserValidation } from '../Validators/userValidator';
 import { listItemValidation } from '../Validators/commonValidator';
 import { generateValidationErrorMessage } from '../common/generate-validation-msg';
 import { UserUseCase } from '../domain/user-usecase';
@@ -16,7 +16,7 @@ import FileRoutes from './UserFileController';
 
 const router = Router();
 router.get('/',
-    validatorMiddleware(listItemValidation, 'body'),
+    validatorMiddleware(ListUserValidation, 'body'),
     authMiddleware,
     async (req: Request, res: Response): Promise<void> => {
         const listUserRequest = req.body;

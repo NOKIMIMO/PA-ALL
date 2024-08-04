@@ -1,6 +1,7 @@
 import * as Joi from "joi";
 import { User } from "../database/models/user";
 import { token } from "morgan";
+import { user_access_type } from "../common/enum/access-type";
 
 
 export interface ListUserResponse{
@@ -72,4 +73,16 @@ export const LoginUserValidation = Joi.object<LoginUserValidationRequest>({
 export interface LoginUserValidationRequest  {
     email: string
     password: string
+}
+
+export const ListUserValidation = Joi.object<ListUserValidationRequest>({
+    limit: Joi.number().optional(),
+    page: Joi.number().optional(),
+    role: Joi.string().valid(...Object.values(user_access_type)).optional()
+}).options({ abortEarly: false });
+
+export interface ListUserValidationRequest {
+    limit?: number
+    page?: number
+    role?: user_access_type
 }

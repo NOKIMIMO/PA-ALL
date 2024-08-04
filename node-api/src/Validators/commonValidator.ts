@@ -17,3 +17,11 @@ export const selectItemValidation = Joi.object({
 export interface SelectItemRequest{
     itemId: number
 }
+
+export const themeRequestValidation = Joi.object({
+    theme: Joi.string().required()
+})
+
+export interface ThemeRequest{
+    theme: string
+}

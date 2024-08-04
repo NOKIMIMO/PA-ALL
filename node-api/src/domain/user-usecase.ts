@@ -1,10 +1,9 @@
-import { SelectUserRequest, UpdateUserRequest } from '../Validators/userValidator';
+import { ListUserValidationRequest, SelectUserRequest, UpdateUserRequest } from '../Validators/userValidator';
 import { User } from './../database/models/user';
 import { DataSource } from "typeorm";
 import { db } from './../database/db';
 import { compare } from 'bcrypt';
 import { Token } from '../database/models/token';
-import { ListItemRequest } from '../Validators/commonValidator';
 
 export class UserUseCase {
     constructor(private readonly db:DataSource) {}
@@ -25,9 +24,13 @@ export class UserUseCase {
         return user.role === 'SUPER_ADMIN'
     }
 
-    async listUsers(filter: ListItemRequest): Promise<{ users: User[]; totalCount: number; }> {
+    async listUsers(filter: ListUserValidationRequest): Promise<{ users: User[]; totalCount: number; }> {
     const query = this.db.createQueryBuilder(User, 'user')
         .where("user.active = :active", { active: true }); // Ajoutez cette condition pour filtrer les utilisateurs inactifs
+        
+    if (filter.role) {
+        query.andWhere("user.role = :role", { role: filter.role });
+    }
     if (filter.limit) {
         query.limit(filter.limit);
         if (filter.page) {

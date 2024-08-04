@@ -1,7 +1,7 @@
 import { DataSource, In } from 'typeorm';
 import { Task } from './../database/models/task';
 import { UserTask } from './../database/models/user-task';
-import { TaskCreateRequest, TaskSelectOneRequest, TaskUpdateRequest } from '../Validators/taskValidator';
+import { ListTaskRequest, TaskCreateRequest, TaskSelectOneRequest, TaskUpdateRequest } from '../Validators/taskValidator';
 import { ListItemRequest } from '../Validators/commonValidator';
 import { CustomError } from '../common/error/customError';
 import { User } from '../database/models/user';
@@ -29,6 +29,9 @@ export class TaskUseCase {
         if (event.event_date < dueDate) {
             throw new CustomError(400,'Due date is after event end date');
         }
+        if (dueDate < new Date()) {
+            throw new CustomError(400,'Due date is before current date');
+        }
         const newTask = taskRepository.create({max_end_date:dueDate , eventId ,title , description, priority: taskParent, priorityId: priority});
         await taskRepository.save(newTask);
         return newTask;
@@ -40,6 +43,9 @@ export class TaskUseCase {
         if (!task) {
             throw new CustomError(404,'Task not found');
         }
+        if (task.completed) {
+            throw new CustomError(400,'Task already completed');
+        }
         task.completed = true;
         await taskRepository.save(task);
     }
@@ -49,6 +55,9 @@ export class TaskUseCase {
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
             throw new CustomError(404,'Task not found');
+        }
+        if (!task.completed) {
+            throw new CustomError(400,'Task already uncompleted');
         }
         task.completed = false;
         await taskRepository.save(task);
@@ -203,10 +212,19 @@ export class TaskUseCase {
         return userResponse;
     }
 
-    async listTaskOfUser(userId: number): Promise<UserTask[]> {
+    async listTaskOfUser(userId: number): Promise<Task[]> {
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTasks = await taskUserRepository.findBy({userId});
-        return userTasks;
+
+        if (userTasks.length === 0) {
+            return [];
+        }
+        const taskRepository = this.db.getRepository(Task);
+        const taskIds = userTasks.map(userTask => userTask.taskId);
+        //build query
+        const tasks = await taskRepository.findBy({id: In(taskIds)});
+        return tasks;
+
     }
 
     async ListTaskOfEvent(eventId: number): Promise<Task[]> {
@@ -217,7 +235,7 @@ export class TaskUseCase {
         return tasks;
     }
 
-    async ListAllTasks(filter : ListItemRequest): Promise<Task[]> {
+    async ListAllTasks(filter : ListTaskRequest): Promise<Task[]> {
         const taskRepository = this.db.getRepository(Task);
         //build query
         const query = taskRepository.createQueryBuilder('task');
@@ -227,6 +245,7 @@ export class TaskUseCase {
                 query.offset((filter.page-1) * filter.limit)
             }
         }
+        console.log(query.getSql())
         const tasks = await query.getRawMany()
         return tasks;
     }

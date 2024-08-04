@@ -1,4 +1,5 @@
 import * as Joi from "joi";
+import { user_access_type } from "../common/enum/access-type";
 
 export const taskCreateValidation = Joi.object({
     title: Joi.string().required(),
@@ -63,4 +64,14 @@ export const taskAssignMultipleValidation = Joi.object({
 export interface TaskAssignRequest {
     taskId: number
     userId: number
+}
+
+export const listTaskValidation = Joi.object({
+    limit: Joi.number().optional(),
+    page: Joi.number().optional(),
+})  
+
+export interface ListTaskRequest {
+    limit?: number
+    page?: number
 }

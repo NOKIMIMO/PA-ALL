@@ -1,12 +1,12 @@
 import { Request, Response, Router } from 'express';
-import { listItemValidation, selectItemValidation } from '../Validators/commonValidator';
+import {  selectItemValidation } from '../Validators/commonValidator';
 import { generateValidationErrorMessage } from '../common/generate-validation-msg';
 import { db } from '../database/db';
 import { authMiddleware } from '../common/middleware/auth-middleware';
 import { accessMiddleware } from '../common/middleware/access-middleware';
 import { user_access_type } from '../common/enum/access-type';
 import { validatorMiddleware } from '../common/middleware/validator-middleware';
-import { taskAssignMultipleValidation, taskAssignValidation, taskCreateValidation, taskSelectOneValidation, taskUpdateValidation } from '../Validators/taskValidator';
+import { listTaskValidation, taskAssignMultipleValidation, taskAssignValidation, taskCreateValidation, taskSelectOneValidation, taskUpdateValidation } from '../Validators/taskValidator';
 import { JwtPayload } from 'jsonwebtoken';
 import { CustomError } from '../common/error/customError';
 import { TaskUseCase } from '../domain/task-usecase';
@@ -14,7 +14,7 @@ import { TaskUseCase } from '../domain/task-usecase';
 
 const router = Router();
 router.get('/',
-    validatorMiddleware(listItemValidation, 'body'),
+    validatorMiddleware(listTaskValidation, 'body'),
     authMiddleware,
     async (req: Request, res: Response): Promise<void> => {
         const listUserRequest = req.body;
@@ -122,7 +122,7 @@ router.get('/:taskId',
         }
     })
 
-router.get('/:taskId/finished',
+router.post('/:taskId/finish',
     authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
@@ -143,7 +143,7 @@ router.get('/:taskId/finished',
         }
     })
 
-router.get('/:taskId/unfinished',
+router.post('/:taskId/unfinish',
     authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
