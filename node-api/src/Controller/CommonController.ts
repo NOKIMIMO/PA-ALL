@@ -21,8 +21,6 @@ router.post('/themes/download',
             const commonUseCase = new CommonUseCase(db);
             const { theme } = req.body;
             const result  = await commonUseCase.downloadThemeFile(theme);
-            console.log(result);
-            console.log(theme)
             res.setHeader('Content-Disposition', `attachment; filename=${theme}.css`);
             res.setHeader('Content-Type', 'text/css');
             res.status(200);

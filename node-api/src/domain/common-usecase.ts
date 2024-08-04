@@ -17,12 +17,8 @@ export class CommonUseCase {
         if (!theme) {
             throw new Error('Theme not found')
         }
-        // get the the path of the theme, get the file and return a blob of the file
         const filePath = path.resolve(theme.path);
         const file = fs.readFileSync(filePath);
-        // return the file as a blob
-        //change it's name to the theme name and the extension to .css
-
 
         return Buffer.from(file)
 
