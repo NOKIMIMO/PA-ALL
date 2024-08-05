@@ -65,7 +65,7 @@ router.get('/self',
         }
     })
 
-router.get('/self/mannaged',
+router.get('/self/managed',
     authMiddleware,
     validatorMiddleware(listItemValidation, 'body'),
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
@@ -92,6 +92,22 @@ router.get('/user',
         try {
             const EventUsecase = new EventUseCase(db);
             const listEvents = await EventUsecase.listEventsByUser(req.user?.userId);
+            res.status(200);
+            res.json(listEvents);
+        }
+        catch (error) {
+            console.log(error);
+            res.status(500);
+            res.json({ error: 'Internal error' });
+        }
+    })
+
+router.get('/managed',
+    authMiddleware,
+    async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
+        try {
+            const EventUsecase = new EventUseCase(db);
+            const listEvents = await EventUsecase.listManagedEventsByUser(req.user?.userId);
             res.status(200);
             res.json(listEvents);
         }
@@ -168,7 +184,7 @@ router.patch('/:eventId',
         }
     })
 
-router.get('/:eventId/mannaged',
+router.get('/:eventId/managed',
     authMiddleware,
     validatorMiddleware(selectEventValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
@@ -186,7 +202,7 @@ router.get('/:eventId/mannaged',
     }
 )
 
-router.post('/:eventId/mannage',
+router.post('/:eventId/manage',
     authMiddleware,
     validatorMiddleware(selectEventValidation, 'params'),
     validatorMiddleware(addEventMannagerValidation, 'body'),
@@ -210,7 +226,7 @@ router.post('/:eventId/mannage',
         }
     })
 
-router.delete('/:eventId/mannage/self',
+router.delete('/:eventId/manage/self',
     authMiddleware,
     validatorMiddleware(selectEventValidation, 'params'),
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
@@ -233,7 +249,7 @@ router.delete('/:eventId/mannage/self',
         }
     })
 
-router.delete('/:eventId/mannage/:userId',
+router.delete('/:eventId/manage/:userId',
     authMiddleware,
     validatorMiddleware(selectEventValidation, 'params'),
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
