@@ -12,6 +12,27 @@ export default class EventUseCase {
 
     constructor(private readonly db:DataSource) {}
 
+    async removeMannagerFromEvent(eventId:number, userId:number, currentUserId:number): Promise<void> {
+        const eventManagerRepository = this.db.getRepository(EventManager)
+        const eventRepository = this.db.getRepository(Event)
+        const event = await eventRepository.findOneBy({id: eventId})
+        if (!event) {
+            throw new Error('Event not found')
+        }
+        const eventManager = await eventManagerRepository.findOneBy({eventId: eventId, userId: currentUserId})
+        if (!eventManager) {
+            const userRepo = this.db.getRepository(User)
+            const user = await userRepo.findOneBy({id: currentUserId})
+            if (!user) {
+                throw new Error('User not found')
+            }
+            if (user.role !== user_access_type.SUPER_ADMIN) {
+                throw new Error('User not allowed to remove event manager')
+            }
+        }
+        await eventManagerRepository.delete({eventId: eventId, userId: userId})
+    }
+
     async listEvents(filter:ListItemRequest): Promise<{ events: Event[]; totalCount: number; }>{
         const query = this.db.createQueryBuilder(Event, 'event')
         if(filter.limit){
@@ -23,11 +44,26 @@ export default class EventUseCase {
         const [events, totalCount] = await query.getManyAndCount()
         return {events,totalCount}
     }
+    async getMannagerOfEvent(eventId:number): Promise<{ userId: number; }> {
+        const eventManagerRepository = this.db.getRepository(EventManager)
+        const eventManager = await eventManagerRepository.findOneBy({eventId})
+        if (!eventManager) {
+            throw new Error('Event not found')
+        }
+        return { userId: eventManager.userId }
+    }
     async listEventsByUser(userId: number): Promise<{ events: Event[];}>{
         const query = this.db.createQueryBuilder(Event, 'event')
         
         const events = (await query.getMany()).filter((event) => event.userId === userId)
         return {events}
+    }
+    async listMyManagedEvents(userId: number): Promise<{ events: Event[]; totalCount: number; }> {
+        const eventrRepository = this.db.getRepository(Event)
+        const eventManagerRepository = this.db.getRepository(EventManager)
+        const eventsManager = await eventManagerRepository.find({where: {userId: userId}})
+        const events = await eventrRepository.find({where: eventsManager.map((eventManager) => ({id: eventManager.eventId}))})
+        return { events, totalCount: events.length }
     }
 
     async listMyEvents(userId: number): Promise<{ events: Event[]; totalCount: number; }> {
@@ -43,12 +79,38 @@ export default class EventUseCase {
         return { events, totalCount }
     }
 
+    async addMannagerToEvent(eventId:number, userId:number, currentUserId:number): Promise<void> {
+        const eventManagerRepository = this.db.getRepository(EventManager)
+        const eventRepository = this.db.getRepository(Event)
+        const event = await eventRepository.findOneBy({id: eventId})
+        if (!event) {
+            throw new Error('Event not found')
+        }
+        const eventManager = await eventManagerRepository.findOneBy({eventId: eventId, userId: currentUserId})
+        if (!eventManager) {
+            const userRepo = this.db.getRepository(User)
+            const user = await userRepo.findOneBy({id: currentUserId})
+            if (!user) {
+                throw new Error('User not found')
+            }
+            if (user.role !== user_access_type.SUPER_ADMIN) {
+                throw new Error('User not allowed to add event manager')
+            }
+        }
+        const newEventManager = eventManagerRepository.create({eventId, userId})
+        await eventManagerRepository.save(newEventManager)
+        
+
+    }
+
     async createEvent(data: createEventValidationRequest,userid:number): Promise<Event> {
         const eventRepository = this.db.getRepository(Event);
         const newEvent = eventRepository.create({...data,user :{id:userid}});
+        const newEventReturn = await eventRepository.save(newEvent);
         const eventMannagerRepository = this.db.getRepository(EventManager);
         const eventMannager = eventMannagerRepository.create({event:newEvent, user:{id:userid}});
-        return await eventRepository.save(newEvent);
+        await eventMannagerRepository.save(eventMannager);
+        return newEventReturn;
     }
     async getEventById(data:selectEventRequest): Promise<Event|null>{
         const repo = this.db.getRepository(Event)

@@ -74,3 +74,19 @@ export interface selectEventByUserRequest  {
 export const selectEventByUserValidation = Joi.object<selectEventByUserRequest>({
     userId: Joi.number().required()
 })
+
+export const addEventMannagerValidation = Joi.object<addEventMannagerRequest>({
+    usersId: Joi.array().items(Joi.number()).required()
+})
+
+export interface addEventMannagerRequest{
+    usersId: number[]
+}
+
+export const removeEventMannagerValidation = Joi.object<removeEventMannagerRequest>({
+    usersId: Joi.array().items(Joi.number()).required()
+})
+
+export interface removeEventMannagerRequest{
+    usersId: number[]
+}
