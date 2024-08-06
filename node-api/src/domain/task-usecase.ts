@@ -239,14 +239,14 @@ export class TaskUseCase {
         const taskRepository = this.db.getRepository(Task);
         //build query
         const query = taskRepository.createQueryBuilder('task');
-        if(filter.limit){
-            query.limit(filter.limit)
-            if(filter.page){
-                query.offset((filter.page-1) * filter.limit)
+        if (filter.limit) {
+            query.take(filter.limit);
+            if (filter.page) {
+                query.skip((filter.page - 1) * filter.limit);
             }
         }
         console.log(query.getSql())
-        const tasks = await query.getRawMany()
+        const tasks = await query.getMany()
         return tasks;
     }
 
