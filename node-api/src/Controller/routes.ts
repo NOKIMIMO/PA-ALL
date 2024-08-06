@@ -41,9 +41,10 @@ export const routes = (app: Express) => {
     app.use('/api/v1/votes', voteRoutes); // Utilisez le contrôleur de votes
     app.use('/api/v1/ag', AgController);
     app.use('/api/v1/ag-tasks', AgTaskController);
-    app.use('/api/v1/tasks',accessMiddleware(() => [user_access_type.SUPER_ADMIN,user_access_type.ADMIN,user_access_type.EMPLOYEE])
-        
-        , TaskController);
+    app.use('/api/v1/tasks',
+        authMiddleware,
+        accessMiddleware(() => [user_access_type.SUPER_ADMIN,user_access_type.ADMIN,user_access_type.EMPLOYEE]),
+        TaskController);
     app.use('/api/v1/contact', contactRoutes); // Ajoutez cette ligne
     app.post('/api/v1/create-checkout-session', async (req, res) => {
         try {

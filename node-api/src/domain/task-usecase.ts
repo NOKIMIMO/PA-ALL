@@ -229,8 +229,6 @@ export class TaskUseCase {
 
     async ListTaskOfEvent(eventId: number): Promise<Task[]> {
         const taskRepository = this.db.getRepository(Task);
-        console.log("in select task of event ");
-        console.log(eventId);
         const tasks = await taskRepository.findBy({eventId});
         return tasks;
     }
@@ -245,7 +243,6 @@ export class TaskUseCase {
                 query.skip((filter.page - 1) * filter.limit);
             }
         }
-        console.log(query.getSql())
         const tasks = await query.getMany()
         return tasks;
     }

@@ -15,7 +15,6 @@ import { TaskUseCase } from '../domain/task-usecase';
 const router = Router();
 router.get('/',
     validatorMiddleware(listTaskValidation, 'body'),
-    authMiddleware,
     async (req: Request, res: Response): Promise<void> => {
         const listUserRequest = req.body;
         try {
@@ -37,7 +36,6 @@ router.get('/',
 
 
 router.get('/event/:itemId',
-    authMiddleware,
     validatorMiddleware(selectItemValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const eventId = parseInt(req.params.itemId);
@@ -58,7 +56,6 @@ router.get('/event/:itemId',
     })
 
 router.get('/user/:itemId',
-    authMiddleware,
     validatorMiddleware(selectItemValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const userId = parseInt(req.params.itemId);
@@ -80,7 +77,6 @@ router.get('/user/:itemId',
     })
 
 router.get('/self',
-    authMiddleware,
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void | CustomError> => {
         try {
             const taskUseCase = new TaskUseCase(db);
@@ -100,12 +96,9 @@ router.get('/self',
 
     
 router.get('/:taskId',
-    authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
-        console.log(taskId)
-        console.log(req.params)
         try {
             const taskUseCase = new TaskUseCase(db);
             const task = await taskUseCase.selectOneTask(taskId);
@@ -123,7 +116,6 @@ router.get('/:taskId',
     })
 
 router.post('/:taskId/finish',
-    authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
@@ -144,7 +136,6 @@ router.post('/:taskId/finish',
     })
 
 router.post('/:taskId/unfinish',
-    authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
@@ -165,7 +156,6 @@ router.post('/:taskId/unfinish',
     })
 
 router.get('/:taskId/assigned',
-    authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
@@ -186,7 +176,6 @@ router.get('/:taskId/assigned',
     })
 
 router.post('/',
-    authMiddleware,
     validatorMiddleware(taskCreateValidation, 'body'),
     async (req: Request, res: Response): Promise<void> => {
         const task = req.body;
@@ -207,7 +196,6 @@ router.post('/',
     })
 
 router.patch('/:taskId',
-    authMiddleware,
     validatorMiddleware(taskUpdateValidation, 'body'),
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
@@ -230,7 +218,6 @@ router.patch('/:taskId',
     })
 
 router.delete('/:taskId',
-    authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
@@ -253,7 +240,6 @@ router.delete('/:taskId',
 //assigning tasks
 
 router.get('/:taskId/assign/:userId',
-    authMiddleware,
     validatorMiddleware(taskAssignValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
@@ -274,7 +260,6 @@ router.get('/:taskId/assign/:userId',
         }
     })
 router.post('/:taskId/assign',
-    authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     validatorMiddleware(taskAssignMultipleValidation , 'body'),
     async (req: Request, res: Response): Promise<void> => {
@@ -301,7 +286,6 @@ router.post('/:taskId/assign',
 //removing tasks
 
 router.delete('/:taskId/unassign/:userId',
-    authMiddleware,
     validatorMiddleware(taskAssignValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
@@ -323,7 +307,6 @@ router.delete('/:taskId/unassign/:userId',
     })
 
 router.post('/:taskId/unassign',
-    authMiddleware,
     validatorMiddleware(taskSelectOneValidation, 'params'),
     validatorMiddleware(taskAssignMultipleValidation , 'body'),
     async (req: Request, res: Response): Promise<void> => {
@@ -346,7 +329,6 @@ router.post('/:taskId/unassign',
     })
 
     router.get('/:taskId/clear',
-        authMiddleware,
         validatorMiddleware(taskSelectOneValidation, 'params'),
         async (req: Request, res: Response): Promise<void> => {
             const taskId = parseInt(req.params.taskId);
