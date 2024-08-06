@@ -7,6 +7,7 @@ import { User } from "../database/models/user";
 import { user_access_type } from "../common/enum/access-type";
 import { UsersEvents } from "../database/models/users-events";
 import { EventManager } from "../database/models/eventMannager";
+import { UserResponse } from "../Validators/userValidator";
 
 export default class EventUseCase {
 
@@ -57,13 +58,30 @@ export default class EventUseCase {
         const [events, totalCount] = await query.getManyAndCount()
         return { events, totalCount }
     }
-    async getMannagerOfEvent(eventId: number): Promise<{ userId: number; }> {
-        const eventManagerRepository = this.db.getRepository(EventManager)
-        const eventManager = await eventManagerRepository.findOneBy({ eventId })
+    async getMannagerOfEvent(eventId: number): Promise<UserResponse[]> {
+        const eventManagerRepository = this.db.getRepository(EventManager);
+        const eventManager = await eventManagerRepository.findBy({ eventId });
         if (!eventManager) {
             throw new Error('Event not found')
         }
-        return { userId: eventManager.userId }
+        const userRepository = this.db.getRepository(User);
+        const manngerUsersId = eventManager.map((eventManager) => eventManager.userId);
+        const users = await userRepository.findBy({id: In(manngerUsersId)});
+
+        // Map to UserResponse while excluding the password field
+        const userResponse = users.map(user => ({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            lastname: user.lastname,
+            firstname: user.firstname,
+            active: user.active,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+        }));
+    
+        return userResponse;
+     
     }
     async listEventsByUser(userId: number): Promise<{ events: Event[]; }> {
         const query = this.db.createQueryBuilder(Event, 'event')
