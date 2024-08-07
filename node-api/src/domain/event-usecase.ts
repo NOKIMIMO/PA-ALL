@@ -8,6 +8,9 @@ import { user_access_type } from "../common/enum/access-type";
 import { UsersEvents } from "../database/models/users-events";
 import { EventManager } from "../database/models/eventMannager";
 import { UserResponse } from "../Validators/userValidator";
+import { Task } from "../database/models/task";
+import { UserTask } from "../database/models/user-task";
+import { CustomError } from "../common/error/customError";
 
 export default class EventUseCase {
 
@@ -18,27 +21,47 @@ export default class EventUseCase {
         const eventRepository = this.db.getRepository(Event)
         const event = await eventRepository.findOneBy({ id: eventId })
         if (!event) {
-            throw new Error('Event not found')
+            throw new CustomError(404,'Event not found')
         }
         const eventManager = await eventManagerRepository.findOneBy({ eventId: eventId, userId: currentUserId })
         if (!eventManager) {
             const userRepo = this.db.getRepository(User)
             const user = await userRepo.findOneBy({ id: currentUserId })
             if (!user) {
-                throw new Error('User not found')
+                throw new CustomError(404,'User not found')
             }
             if (user.role !== user_access_type.SUPER_ADMIN, user.role !== user_access_type.ADMIN) {
-                throw new Error('User not allowed to remove event manager')
+                throw new CustomError(401,'User not allowed to remove event manager')
             }
         }
         await eventManagerRepository.delete({ eventId: eventId, userId: userId })
+    }
+
+    async listEventWhereTaskAssigned(userId: number): Promise<{ events: Event[]; totalCount: number; }> {
+        const userRepository = this.db.getRepository(User)
+        const user = await userRepository.findOneBy({ id: userId })
+        if (!user) {
+            throw new CustomError(404,'User not found')
+        }
+        const userTaskRepository = this.db.getRepository(UserTask);
+        const UserTaks = await userTaskRepository.findBy({ userId: userId });
+
+        const taskRepository = this.db.getRepository(Task);
+        const tasksIds = UserTaks.map((userTask) => userTask.taskId);
+        const tasks = await taskRepository.findBy({ id: In(tasksIds) });
+
+        const eventRepository = this.db.getRepository(Event);
+        const eventIds = tasks.map((task) => task.eventId);
+        const events = await eventRepository.findBy({ id: In(eventIds) });
+    
+        return { events, totalCount: events.length }
     }
 
     async listManagedEventsByUser(userId: number): Promise<{ events: Event[]; totalCount: number; }> {
         const userRepository = this.db.getRepository(User)
         const user = await userRepository.findOneBy({ id: userId })
         if (!user) {
-            throw new Error('User not found')
+            throw new CustomError(404,'User not found')
         }
         const eventrRepository = this.db.getRepository(Event)
         const eventManagerRepository = this.db.getRepository(EventManager)
@@ -62,7 +85,7 @@ export default class EventUseCase {
         const eventManagerRepository = this.db.getRepository(EventManager);
         const eventManager = await eventManagerRepository.findBy({ eventId });
         if (!eventManager) {
-            throw new Error('Event not found')
+            throw new CustomError(404,'Event not found')
         }
         const userRepository = this.db.getRepository(User);
         const manngerUsersId = eventManager.map((eventManager) => eventManager.userId);
@@ -103,7 +126,7 @@ export default class EventUseCase {
         const eventQuery = this.db.getRepository(Event)
         const user = await query.findOneBy({ id: userId })
         if (!user) {
-            throw new Error('User not found')
+            throw new CustomError(404,'User not found')
         }
         const [userEvents, totalCount] = await userEventQuery.findAndCount({ where: { userid: userId } });
         const events = await eventQuery.find({ where: userEvents.map((userEvent) => ({ id: userEvent.eventid })) })
@@ -115,17 +138,17 @@ export default class EventUseCase {
         const eventRepository = this.db.getRepository(Event)
         const event = await eventRepository.findOneBy({ id: eventId })
         if (!event) {
-            throw new Error('Event not found')
+            throw new CustomError(404,'Event not found')
         }
         const eventManager = await eventManagerRepository.findOneBy({ eventId: eventId, userId: currentUserId })
         if (!eventManager) {
             const userRepo = this.db.getRepository(User)
             const user = await userRepo.findOneBy({ id: currentUserId })
             if (!user) {
-                throw new Error('User not found')
+                throw new CustomError(404,'Event not found')
             }
             if (user.role !== user_access_type.SUPER_ADMIN, user.role !== user_access_type.ADMIN) {
-                throw new Error('User not allowed to remove event manager')
+                throw new CustomError(401,'User not allowed to remove event manager')
             }
         }
         const newEventManager = eventManagerRepository.create({ eventId, userId })
@@ -136,6 +159,13 @@ export default class EventUseCase {
 
     async createEvent(data: createEventValidationRequest, userid: number): Promise<Event> {
         const eventRepository = this.db.getRepository(Event);
+        //today + 3 days
+        const today = new Date();
+        today.setDate(today.getDate() + 3);
+        if(data.event_date < today){
+            throw new CustomError(401,'Event date must be in the future')
+        }
+    
         const newEvent = eventRepository.create({ ...data, user: { id: userid } });
         const newEventReturn = await eventRepository.save(newEvent);
         const eventMannagerRepository = this.db.getRepository(EventManager);
@@ -157,10 +187,10 @@ export default class EventUseCase {
         const userRepo = this.db.getRepository(User)
         const user = await userRepo.findOneBy({ id: userid })
         if (!user) {
-            throw new Error('User not found')
+            throw new CustomError(404,'User not found')
         }
         if (user.role !== user_access_type.SUPER_ADMIN, user.role !== user_access_type.ADMIN) {
-            throw new Error('User not allowed to remove event manager')
+            throw new CustomError(401,'User not allowed to remove event manager')
         }
         if (data.title) {
             eventFind.title = data.title
@@ -189,14 +219,14 @@ export default class EventUseCase {
         const userRepo = this.db.getRepository(User)
         const event = await repo.findOneBy({ id: data.eventId })
         if (!event) {
-            throw new Error('Event not found')
+            throw new CustomError(404,'Event not found')
         }
         const user = await userRepo.findOneBy({ id: userid })
         if (!user) {
-            throw new Error('User not found')
+            throw new CustomError(404,'User not found')
         }
         if ((user.role !== user_access_type.ADMIN && user.role !== user_access_type.SUPER_ADMIN) && user.id !== event.userId) {
-            throw new Error('User not allowed to delete this event')
+            throw new CustomError(401,'User not allowed to delete this event')
         }
         await repo.remove(event)
     }
@@ -236,7 +266,7 @@ export default class EventUseCase {
         const repo = this.db.getRepository(UsersEvents)
         const userEvent = await repo.findOneBy({ eventid: data.eventId, userid })
         if (!userEvent) {
-            throw new Error('User has not joined this event')
+            throw new CustomError(401,'User has not joined this event')
         }
         await repo.remove(userEvent)
     }
@@ -247,10 +277,10 @@ export default class EventUseCase {
         const eventRepo = this.db.getRepository(Event)
         const event = await eventRepo.findOneBy({ id: data.eventId })
         if (!event) {
-            throw new Error('Event not found')
+            throw new CustomError(404,'Event not found')
         }
         if (!userEvents) {
-            throw new Error('User(s) not found in given event')
+            throw new CustomError(400,'User(s) not found in given event')
         }
         const string = []
         for (const userId of usersid) {

@@ -6,6 +6,7 @@ import EventUseCase from '../domain/event-usecase';
 import { addEventMannagerValidation, addUsersToEventValidation, createEventValidation, selectEventByUserValidation, selectEventValidation, updateEventValidation } from '../Validators/eventValidator';
 import { validatorMiddleware } from '../common/middleware/validator-middleware';
 import { JwtPayload } from 'jsonwebtoken';
+import { CustomError } from '../common/error/customError';
 
 const router = Router();
 router.post('/',
@@ -24,9 +25,12 @@ router.post('/',
             res.status(201);
             res.json({ event });
         } catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     })
 router.get('/',
@@ -41,17 +45,44 @@ router.get('/',
             res.json(listEvents);
         }
         catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     })
+
+
+
+router.get('/user/:userId/assigned',
+    authMiddleware,
+    validatorMiddleware(selectEventByUserValidation, 'params'),
+    async (req: Request, res: Response): Promise<void> => {
+        const userId = parseInt(req.params.userId);
+        try {
+            const EventUsecase = new EventUseCase(db);
+            const listEvents = await EventUsecase.listEventWhereTaskAssigned(userId);
+            res.status(200);
+            res.json(listEvents);
+        }
+        catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
+        }
+    })
+
+
 
 router.get('/self',
     authMiddleware,
     validatorMiddleware(listItemValidation, 'body'),
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
-        console.log("dans event self")
         try {
             const EventUsecase = new EventUseCase(db);
             const listEvents = await EventUsecase.listMyEvents(req.user?.userId);
@@ -59,9 +90,12 @@ router.get('/self',
             res.json(listEvents);
         }
         catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     })
 
@@ -77,13 +111,33 @@ router.get('/self/managed',
             res.json(listEvents);
         }
         catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     }
 )
-
+router.get('/self/assigned',
+    authMiddleware,
+    async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
+        try {
+            const EventUsecase = new EventUseCase(db);
+            const listEvents = await EventUsecase.listEventWhereTaskAssigned(req.user?.userId);
+            res.status(200);
+            res.json(listEvents);
+        }
+        catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
+        }
+    })
 
 
 router.get('/user',
@@ -96,9 +150,12 @@ router.get('/user',
             res.json(listEvents);
         }
         catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     })
 
@@ -112,9 +169,12 @@ router.get('/managed',
             res.json(listEvents);
         }
         catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     })
 
@@ -134,9 +194,12 @@ router.get('/:eventId',
             res.status(200);
             res.json(event);
         } catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     })
 
@@ -178,9 +241,12 @@ router.patch('/:eventId',
             res.status(200);
             res.json(updateEvent);
         } catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     })
 
@@ -191,13 +257,16 @@ router.get('/:eventId/managed',
         const eventId = parseInt(req.params.eventId);
         try {
             const EventUsecase = new EventUseCase(db);
-            const event = await EventUsecase.getMannagerOfEvent( eventId);
+            const event = await EventUsecase.getMannagerOfEvent(eventId);
             res.status(200);
             res.json(event);
         } catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     }
 )
@@ -211,7 +280,7 @@ router.post('/:eventId/manage',
         const usersId = req.body.usersId;
         try {
             const EventUsecase = new EventUseCase(db);
-            await EventUsecase.addMannagerToEvent(eventId,usersId,req.user?.userId!);
+            await EventUsecase.addMannagerToEvent(eventId, usersId, req.user?.userId!);
             res.status(201)
             res.json({ message: "Users added to mannage the event" });
         } catch (error) {
@@ -234,7 +303,7 @@ router.delete('/:eventId/manage/self',
         const usersId = req.body.usersId;
         try {
             const EventUsecase = new EventUseCase(db);
-            await EventUsecase.removeMannagerFromEvent(eventId,req.user?.userId!,req.user?.userId!);
+            await EventUsecase.removeMannagerFromEvent(eventId, req.user?.userId!, req.user?.userId!);
             res.status(204)
             res.json();
         } catch (error) {
@@ -257,7 +326,7 @@ router.delete('/:eventId/manage/:userId',
         const usersId = req.body.usersId;
         try {
             const EventUsecase = new EventUseCase(db);
-            await EventUsecase.removeMannagerFromEvent(eventId,usersId,req.user?.userId!);
+            await EventUsecase.removeMannagerFromEvent(eventId, usersId, req.user?.userId!);
             res.status(204)
             res.json();
         } catch (error) {
@@ -289,9 +358,12 @@ router.get('/:eventId/users',
             res.status(200);
             res.json({ users: users });
         } catch (error) {
-            console.log(error);
-            res.status(500);
-            res.json({ error: 'Internal error' });
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
         }
     }
 )

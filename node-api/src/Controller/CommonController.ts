@@ -31,4 +31,18 @@ router.post('/themes/download',
             res.json({ error: 'Internal error' });
         }
     })
+
+router.get('/themes',
+    authMiddleware,
+    async (req: Request, res: Response): Promise<void> => {
+        try {
+            const commonUseCase = new CommonUseCase(db);
+            const result = await commonUseCase.getThemes();
+            res.status(200);
+            res.json(result);
+        } catch (error) {
+            res.status(500);
+            res.json({ error: 'Internal error' });
+        }
+    })
 export default router;

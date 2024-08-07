@@ -21,7 +21,9 @@ export class CommonUseCase {
         const file = fs.readFileSync(filePath);
 
         return Buffer.from(file)
+    }
 
-        
+    async getThemes() {
+        return await db.getRepository(Theme).find();
     }
 }

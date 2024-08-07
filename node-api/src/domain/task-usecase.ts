@@ -20,6 +20,9 @@ export class TaskUseCase {
             if (!taskParent) {
                 throw new CustomError(404,'Task not found');
             }
+            if (taskParent.eventId != task.eventId){
+                throw new CustomError(400,'Task priority must be in the same event' );
+            }
         }
         const eventRepository = this.db.getRepository(Event);
         const event = await eventRepository.findOneBy({id: eventId});
