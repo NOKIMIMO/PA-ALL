@@ -8,6 +8,7 @@ import {File} from "./file"
 import { UserVote } from "./userVote";
 import { BanTicket } from "./banTicket";
 import { EventManager } from "./eventMannager";
+import { Ag } from "./ag";
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
@@ -64,6 +65,9 @@ export class User {
     @OneToMany(() => UserVote, userVote => userVote.user)
     userVotes: UserVote[];
 
+    @OneToMany(()=> Ag , ag => ag.user)
+    agMannager: Ag[];
+
     @OneToMany(()=> EventManager, eventManager => eventManager.event)
     eventManager: EventManager[];
     
@@ -71,7 +75,9 @@ export class User {
          tokens: Token[],role: string,events: Event[],
          active: boolean,posts: Post[],comments: Comment[],
          files: File[], userVotes: UserVote[],
-         lastname: string, firstname: string, banTickets: BanTicket[], banTicketsIssued: BanTicket[], eventManager: EventManager[]) {
+         lastname: string, firstname: string, banTickets: BanTicket[], banTicketsIssued: BanTicket[],
+         eventManager: EventManager[], agMannager: Ag[]
+        ) {
         this.id = id;
         this.email = email; 
         this.password = password;
@@ -89,6 +95,7 @@ export class User {
         this.firstname=firstname;
         this.banTickets=banTickets;
         this.banTicketsIssued=banTicketsIssued;
-        this.eventManager=eventManager
+        this.eventManager=eventManager;
+        this.agMannager=agMannager;
     }
 };

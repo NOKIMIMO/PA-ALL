@@ -35,12 +35,21 @@ export const routes = (app: Express) => {
 
     app.use('/api/v1/users', userRoutes);
     app.use('/api/v1/auth', authRoutes);
-    app.use('/api/v1/events', eventRoutes);
+    app.use('/api/v1/events',
+        authMiddleware,
+        accessMiddleware(() => [user_access_type.SUPER_ADMIN,user_access_type.ADMIN,user_access_type.EMPLOYEE,user_access_type.LICENSED]),
+         eventRoutes);
     app.use('/api/v1/posts', postRoutes);
     app.use('/api/v1/files', fileRoutes);
     app.use('/api/v1/votes', voteRoutes); // Utilisez le contrôleur de votes
-    app.use('/api/v1/ag', AgController);
-    app.use('/api/v1/ag-tasks', AgTaskController);
+    app.use('/api/v1/ag',
+        authMiddleware,
+        accessMiddleware(() => [user_access_type.SUPER_ADMIN,user_access_type.ADMIN,user_access_type.EMPLOYEE]),
+         AgController);
+    app.use('/api/v1/ag-tasks',
+        authMiddleware,
+        accessMiddleware(() => [user_access_type.SUPER_ADMIN,user_access_type.ADMIN,user_access_type.EMPLOYEE]),
+         AgTaskController);
     app.use('/api/v1/tasks',
         authMiddleware,
         accessMiddleware(() => [user_access_type.SUPER_ADMIN,user_access_type.ADMIN,user_access_type.EMPLOYEE]),

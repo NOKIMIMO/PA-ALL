@@ -39,7 +39,7 @@ router.get('/themes',
             const commonUseCase = new CommonUseCase(db);
             const result = await commonUseCase.getThemes();
             res.status(200);
-            res.json(result);
+            res.json({themes : result});
         } catch (error) {
             res.status(500);
             res.json({ error: 'Internal error' });

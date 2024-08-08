@@ -13,7 +13,6 @@ export const selectAgValidation = Joi.object({
 }).options({ abortEarly: false });
 
 export const updateAgValidation = Joi.object({
-    agId: Joi.number().required(),
     title: Joi.string(),
     description: Joi.string(),
     ag_date: Joi.date(),
@@ -34,7 +33,6 @@ export interface selectedAgRequest {
 }
 
 export interface updateAgValidationRequest {
-    agId: number;
     title?: string;
     description?: string;
     ag_date?: Date;
@@ -42,3 +40,9 @@ export interface updateAgValidationRequest {
     minimum_participants?: number;
 }
 
+export interface addUsersToAgRequest{
+    usersId: number[]
+}
+export const addUsersToAgValidation = Joi.object<addUsersToAgRequest>({
+    usersId: Joi.array().items(Joi.number()).required()
+})

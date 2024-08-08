@@ -231,16 +231,16 @@ export default class EventUseCase {
         await repo.remove(event)
     }
 
-    async addUsersToEvent(data: selectEventRequest, usersid: number[]): Promise<string[] | null> {
+    async addUsersToEvent(eventId: number, usersid: number[]): Promise<string[] | null> {
         const repo = this.db.getRepository(UsersEvents)
         const eventRepo = this.db.getRepository(Event)
-        const event = await eventRepo.findOneBy({ id: data.eventId })
+        const event = await eventRepo.findOneBy({ id: eventId })
         if (!event) {
             throw new Error('Event not found')
         }
         const string = []
         for (const userId of usersid) {
-            const alreadyExists = await repo.findOneBy({ eventid: data.eventId, userid: userId })
+            const alreadyExists = await repo.findOneBy({ eventid: eventId, userid: userId })
             if (alreadyExists) {
                 string.push('User ' + userId + ' already joined this event')
                 continue

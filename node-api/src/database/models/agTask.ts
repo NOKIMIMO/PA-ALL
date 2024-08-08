@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Event } from "./event";
+import { Ag } from "./ag";
 
 @Entity()
 export class AgTask{
@@ -21,12 +22,12 @@ export class AgTask{
     @ManyToMany(() => AgTask, task => task.id)
     task: AgTask[]
 
-    @Column({ name: 'eventId' })
-    eventId: number; 
+    @Column({ name: 'agId' })
+    agId: number; 
 
-    @ManyToOne(() => Event, event => event.id)
-    @JoinColumn({ name: 'eventId' })
-    event: Event
+    @ManyToOne(() => Ag, ag => ag.id)
+    @JoinColumn({ name: 'agId' })
+    ag: Ag
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
     createdAt: Date;
@@ -36,16 +37,16 @@ export class AgTask{
     
     constructor(id: number, description: string, completed: boolean,
          max_end_date: Date, createdAt: Date, updatedAt: Date,
-          event: Event , task: AgTask[], eventId: number, title: string) {
+         ag: Ag , task: AgTask[], agId: number, title: string) {
         this.id = id;
         this.description = description;
         this.completed = completed;
         this.max_end_date = max_end_date;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.event = event;
+        this.ag = ag;
         this.task = task;
-        this.eventId = eventId;
+        this.agId = agId;
         this.title = title;
     }
     

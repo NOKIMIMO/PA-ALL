@@ -145,8 +145,6 @@ export class TaskUseCase {
         if (!task) {
             throw new CustomError(404,'Task not found');
         }
-        console.log("inside assign multiple usecase")
-        console.log(task, taskId, userIds)
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTasks = await taskUserRepository.findBy({taskId});
         const userTaskIds = userTasks.map(userTask => userTask.userId);
@@ -161,6 +159,13 @@ export class TaskUseCase {
         if (!task) {
             throw new CustomError(404,'Task not found');
         }
+        // find taks which have this one as priority and remove the link
+        const tasks = await taskRepository.findBy({priorityId: taskId});
+        tasks.forEach(async task => {
+            task.priority = null;
+            task.priorityId = null;
+            await taskRepository.save(task);
+        });
         await taskRepository.remove(task);
     }
 

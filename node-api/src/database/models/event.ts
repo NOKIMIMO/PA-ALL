@@ -19,7 +19,7 @@ export class Event {
     @JoinColumn({ name: "userId" }) // Joining on userId
     user: User;
 
-    @OneToMany(() => Task, task => task.event)
+    @OneToMany(() => Task, task => task.event, {cascade: true})
     tasks: Task[];
 
     @Column()
@@ -37,7 +37,7 @@ export class Event {
     @Column({ default: true })
     active: boolean;
 
-    @OneToMany(()=> EventManager, eventManager => eventManager.event)
+    @OneToMany(()=> EventManager, eventManager => eventManager.event, {cascade: true})
     eventManager: EventManager[];
 
     @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })

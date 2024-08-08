@@ -18,7 +18,7 @@ router.post('/',
             const EventUsecase = new EventUseCase(db);
             const event = await EventUsecase.createEvent({ ...createEventRequest }, req.user?.userId!);
             if (req.body.usersId !== undefined) {
-                const addParticipants = await EventUsecase.addUsersToEvent({ eventId: event.id }, req.body.usersId);
+                const addParticipants = await EventUsecase.addUsersToEvent(event.id, req.body.usersId);
                 console.log(addParticipants);
             }
 
@@ -186,11 +186,6 @@ router.get('/:eventId',
         try {
             const EventUsecase = new EventUseCase(db);
             const event = await EventUsecase.getEventById({ ...getEventRequest });
-            if (!event) {
-                res.status(404);
-                res.json({ error: 'Event not found' });
-                return;
-            }
             res.status(200);
             res.json(event);
         } catch (error) {
@@ -373,10 +368,10 @@ router.post('/:eventId/join',
     authMiddleware,
     validatorMiddleware(selectEventValidation, 'params'),
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
-        const joinEventRequest = { ...req.body, ...req.params };
+        const eventId = parseInt(req.params.eventId);
         try {
             const EventUsecase = new EventUseCase(db);
-            const response = await EventUsecase.addUsersToEvent({ ...joinEventRequest }, [req.user?.userId!]);
+            const response = await EventUsecase.addUsersToEvent(eventId, [req.user?.userId!]);
             res.status(201)
             res.json({ message: response });
         } catch (error) {
@@ -447,7 +442,6 @@ router.post('/:eventId/remove',
     validatorMiddleware(addUsersToEventValidation, 'body'),
     async (req: Request, res: Response): Promise<void> => {
         const addUsersToEventRequest = { ...req.body, ...req.params };
-        console.log(req.body)
         try {
             const EventUsecase = new EventUseCase(db);
             const response = await EventUsecase.removeUsersFromEvent({ ...addUsersToEventRequest }, req.body.usersId);

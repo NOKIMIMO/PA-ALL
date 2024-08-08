@@ -1,8 +1,12 @@
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { AgTask } from './../database/models/agTask';
 import { UserTask } from './../database/models/user-task';
 import { TaskCreateRequest, TaskSelectOneRequest, TaskUpdateRequest } from '../Validators/taskValidator';
 import { ListItemRequest } from '../Validators/commonValidator';
+import { CustomError } from '../common/error/customError';
+import { UserAgTask } from '../database/models/user-agTask';
+import { UserResponse } from '../Validators/userValidator';
+import { User } from '../database/models/user';
 export class TaskAgUseCase {
     constructor(private readonly db:DataSource) {};
 
@@ -13,11 +17,37 @@ export class TaskAgUseCase {
         return newTask;
     }
 
+    async unfinishTask(taskId: number): Promise<void> {
+        const taskRepository = this.db.getRepository(AgTask);
+        const task = await taskRepository.findOneBy({id: taskId});
+        if (!task) {
+            throw new CustomError(404, 'Task not found');
+        }
+        if(!task.completed){
+            throw new CustomError(400, 'Task already uncompleted');
+        }
+        task.completed = false;
+        await taskRepository.save(task);
+    }
+
+    async finishTask(taskId: number): Promise<void> {
+        const taskRepository = this.db.getRepository(AgTask);
+        const task = await taskRepository.findOneBy({id: taskId});
+        if (!task) {
+            throw new CustomError(404, 'Task not found');
+        }
+        if(task.completed){
+            throw new CustomError(400, 'Task already completed');
+        }
+        task.completed = true;
+        await taskRepository.save(task);
+    }
+
     async updateTask(taskId: number,task: TaskUpdateRequest): Promise<AgTask> {
         const taskRepository = this.db.getRepository(AgTask);
         const taskToUpdate = await taskRepository.findOneBy({id: taskId});
         if (!taskToUpdate) {
-            throw new Error('Task not found');
+            throw new CustomError(404, 'Task not found');
         }
         if(task.title){
             taskToUpdate.title = task.title;
@@ -31,7 +61,7 @@ export class TaskAgUseCase {
         if(task.priority){
             const taskParent = await taskRepository.findOneBy({id: task.priority});
             if (!taskParent) {
-                throw new Error('Task not found');
+                throw new CustomError(404, 'Task not found');
             }
             taskToUpdate.task = [taskParent];
         }
@@ -43,7 +73,7 @@ export class TaskAgUseCase {
         const taskRepository = this.db.getRepository(AgTask);
         const task = await taskRepository.findOneBy({id: taskId.taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404, 'Task not found');
         }
         return task;
     }
@@ -55,7 +85,7 @@ export class TaskAgUseCase {
             .where('task.id IN (:...tasksId)', { tasksId });
         const tasks = await query.getMany();
         if (!tasks) {
-            throw new Error('Tasks not found');
+            throw new CustomError(404, 'Task not found');
         }
         return tasks;
     }
@@ -65,7 +95,7 @@ export class TaskAgUseCase {
         const taskRepository = this.db.getRepository(AgTask);
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404, 'Task not found');
         }
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTask = taskUserRepository.findBy({userId, taskId});
@@ -81,7 +111,7 @@ export class TaskAgUseCase {
         const taskRepository = this.db.getRepository(AgTask);
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404, 'Task not found');
         }
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTasks = await taskUserRepository.findBy({taskId});
@@ -95,7 +125,7 @@ export class TaskAgUseCase {
         const taskRepository = this.db.getRepository(AgTask);
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404, 'Task not found');
         }
         await taskRepository.remove(task);
     }
@@ -104,7 +134,7 @@ export class TaskAgUseCase {
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTask = await taskUserRepository.findOneBy({taskId, userId});
         if (!userTask) {
-            throw new Error('Task not assigned to user');
+            throw new CustomError(400,'Task not assigned to user');
         }
         await taskUserRepository.remove(userTask);
     }
@@ -113,7 +143,7 @@ export class TaskAgUseCase {
         const taskRepository = this.db.getRepository(AgTask);
         const task = await taskRepository.findOneBy({id: taskId});
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404, 'Task not found');
         }
         const taskUserRepository = this.db.getRepository(UserTask);
         const userTasks = await taskUserRepository.findBy({taskId});
@@ -125,21 +155,52 @@ export class TaskAgUseCase {
         await query.execute();
     }
 
-    async listUserOfTask(taskId: number): Promise<UserTask[]> {
-        const taskUserRepository = this.db.getRepository(UserTask);
-        const userTasks = await taskUserRepository.findBy({taskId});
-        return userTasks;
+    async listUserOfTask(taskId: number): Promise<UserResponse[]> {
+        const taskUserRepository = this.db.getRepository(UserAgTask);
+        const userTasks = await taskUserRepository.findBy({agTaskId: taskId});
+        if (userTasks.length === 0) {
+            return [];
+        }
+        // then get the user
+        const userRepository = this.db.getRepository(User);
+        const userIds = userTasks.map(userTask => userTask.userId);
+        //build query
+        const users = await userRepository.findBy({id: In(userIds)});
+
+        // Map to UserResponse while excluding the password field
+        const userResponse = users.map(user => ({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            lastname: user.lastname,
+            firstname: user.firstname,
+            active: user.active,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+        }));
+    
+        return userResponse;
     }
 
-    async listTaskOfUser(userId: number): Promise<UserTask[]> {
-        const taskUserRepository = this.db.getRepository(UserTask);
+    async listTaskOfUser(userId: number): Promise<AgTask[]> {
+        const taskUserRepository = this.db.getRepository(UserAgTask);
         const userTasks = await taskUserRepository.findBy({userId});
-        return userTasks;
+        if (!userTasks) {
+            throw new CustomError(404, 'Task not found');
+        }
+        if (userTasks.length === 0) {
+            return [];
+        }
+        const agTaskRepository = this.db.getRepository(AgTask);
+        const taskIds = userTasks.map(userTask => userTask.agTaskId);
+        const tasks = await agTaskRepository.findBy({id: In(taskIds)});
+
+        return tasks;
     }
 
-    async ListTaskOfEvent(eventId: number): Promise<AgTask[]> {
+    async ListTaskOfAg(agId: number): Promise<AgTask[]> {
         const taskRepository = this.db.getRepository(AgTask);
-        const tasks = await taskRepository.findBy({eventId});
+        const tasks = await taskRepository.findBy({agId});
         return tasks;
     }
 
@@ -161,7 +222,7 @@ export class TaskAgUseCase {
         const taskRepository = this.db.getRepository(AgTask);
         const task = await taskRepository.find();
         if (!task) {
-            throw new Error('Task not found');
+            throw new CustomError(404, 'Task not found');
         }
         const taskUserRepository = this.db.getRepository(UserTask);
         //build query

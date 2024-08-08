@@ -59,7 +59,6 @@ router.get('/user/:itemId',
     validatorMiddleware(selectItemValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const userId = parseInt(req.params.itemId);
-        const task = req.body;
         try {
             const taskUseCase = new TaskUseCase(db);
             const tasks = await taskUseCase.listTaskOfUser(userId);
