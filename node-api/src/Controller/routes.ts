@@ -14,6 +14,9 @@ import { authMiddleware } from "../common/middleware/auth-middleware";
 import { accessMiddleware } from "../common/middleware/access-middleware";
 import { user_access_type } from "../common/enum/access-type";
 import Stripe from "stripe";
+import nodemailer from 'nodemailer';
+import { Mailer } from '../common/mailer';
+import { CustomError } from '../common/error/customError';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -100,6 +103,52 @@ export const routes = (app: Express) => {
         } catch (error) {
             console.error('Error retrieving checkout session:', error);
             res.status(500).json({ error: 'Failed to retrieve checkout session' });
+        }
+    });
+    app.post('/api/v1/send-email', async (req, res) => {
+        const mailer = new Mailer();
+
+        try{
+            mailer.sendMail(req.body.to,req.body.subject,req.body.text)
+            res.status(200).send('Email sent successfully!');
+        }catch(e){
+            if (e instanceof CustomError) {
+                const customError = e as CustomError;
+                res.status(customError.code).send({error: customError.message, "details": customError.additionalInfo});
+            } else {
+                console.error('Error sending email:', e);
+                res.status(500).send('Error sending email');
+            }
+        }
+
+        const { to, subject, text } = req.body;
+    
+        if (!to || !subject || !text) {
+            return res.status(400).send('Please provide to, subject and text fields');
+        }
+    
+        // Nodemailer transporter configuration
+        let transporter = nodemailer.createTransport({
+            service: 'gmail', // Use your email service provider here
+            auth: {
+                user: process.env.EMAIL, // Your email address
+                pass: process.env.EMAIL_PASSWORD, // Your email password or app-specific password
+            },
+        });
+    
+        try {
+            // Send mail with defined transport object
+            await transporter.sendMail({
+                from: `"Your Name" <${process.env.EMAIL}>`, // Sender address
+                to, // List of receivers
+                subject, // Subject line
+                text, // Plain text body
+            });
+    
+            res.status(200).send('Email sent successfully!');
+        } catch (error) {
+            console.error('Error sending email:', error);
+            res.status(500).send('Error sending email');
         }
     });
 };
