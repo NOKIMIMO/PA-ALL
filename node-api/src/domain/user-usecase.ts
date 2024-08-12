@@ -1,9 +1,11 @@
+import { BanTicket } from './../database/models/banTicket';
 import { ListUserValidationRequest, SelectUserRequest, UpdateUserRequest } from '../Validators/userValidator';
 import { User } from './../database/models/user';
 import { DataSource } from "typeorm";
 import { db } from './../database/db';
 import { compare } from 'bcrypt';
 import { Token } from '../database/models/token';
+import { CustomError } from '../common/error/customError';
 
 export class UserUseCase {
     constructor(private readonly db:DataSource) {}
@@ -14,6 +16,19 @@ export class UserUseCase {
             return false
         }
         return user.role === 'ADMIN'
+    }
+    async getBanMessage(userid:number): Promise<BanTicket|CustomError>{
+        const UserRepo = this.db.getRepository(User)
+        const BanTicketRepo = this.db.getRepository(BanTicket)
+        const user = await UserRepo.findOneBy({ id: userid })
+        if (!user) {
+            return new CustomError(404, 'User not found')
+        }
+        const banTicket = await BanTicketRepo.findOneBy({ user_id: userid, active: true })
+        if (!banTicket) {
+            return new CustomError(400, 'User was manually deactivated, contact support at mail@mail.com')
+        }
+        return banTicket
     }
 
     async isUserSuperAdmin(userid:number): Promise<boolean>{

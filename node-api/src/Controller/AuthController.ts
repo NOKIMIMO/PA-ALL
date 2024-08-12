@@ -1,3 +1,4 @@
+import { Message } from './../../../react-app/src/services/MessageService';
 import { Request, Response, Router } from 'express';
 import { createUserValidation,LoginUserValidation } from '../Validators/userValidator';
 import {generateValidationErrorMessage} from '../common/generate-validation-msg';
@@ -11,6 +12,9 @@ import { UserUseCase} from '../domain/user-usecase';
 import { authMiddleware } from '../common/middleware/auth-middleware';
 import { User } from '../database/models/user';
 import { validatorMiddleware } from '../common/middleware/validator-middleware';
+import { CustomError } from '../common/error/customError';
+import { BanTicket } from '../database/models/banTicket';
+import { formatDuration } from '../common/formatDuration';
 
 const router = Router();
 router.post('/signup', 
@@ -51,7 +55,16 @@ async (req: Request, res: Response) => {
             return
         }
         if (user.active === false) {
-            res.status(400).send({ error: "user was deleted" })
+            const data = await UserUsecase.getBanMessage(user.id)
+            if (data instanceof CustomError) {
+                res.status(data.code).send({error: data.message})
+            }
+            //else it's a banTicket
+            const ban = data as BanTicket
+            //format duration in days, hours, minutes
+            const durationRemaining = formatDuration(ban.end_date.getTime() - new Date().getTime()) 
+            const originalDuration = formatDuration(ban.end_date.getTime() - ban.createdAt.getTime())
+            res.status(400).send({ban_id: ban.id, message: ban.message, reason: ban.reason,end_date: ban.end_date, durationRemaining:durationRemaining, originalDuration: originalDuration})
             return
         }
         const secret = process.env.JWT_SECRET ?? ""
