@@ -10,13 +10,16 @@ import DeleteButton from "../components/FileDeleteBtn";
 import CryptButton from "../components/FileCryptBtn";
 import DLButton from "../components/FileDLBtn";
 import PreviewFile from "../components/FilePreview";
+import FileRenameModal from "../components/FileRenameModal";
 
 export default function VaultPage() {
     const [userData, setUserData] = useState<any>(null);
     const [folders, setFolders] = useState<FolderType[]>([]);
     const [selectedFile, setSelectedFile] = useState<TypedFile | null>(null);
+    const [selectToRenameFile, setSelectToRenameFile] = useState<number | null>(null);
     const [showPreview, setShowPreview] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
 
     const fetchUserData = useCallback(async () => {
@@ -74,12 +77,12 @@ export default function VaultPage() {
         setFolders(prevFolders => {
             const updatedFolders = [...prevFolders];
             const folderToUpdate = updatedFolders[index];
-    
+
             // If folder is already open, return early without changing anything
             if (folderToUpdate.isOpen) {
                 return updatedFolders;
             }
-    
+
             // Otherwise, toggle isOpen state
             updatedFolders[index] = {
                 ...folderToUpdate,
@@ -103,20 +106,60 @@ export default function VaultPage() {
         setCurrentFolderId(parentId);
         setIsModalOpen(true);
     };
+    function findFileById(id: number, folders: FolderType[]): TypedFile | null {
+        // Helper recursive function
+        function searchFolders(folders: FolderType[]): TypedFile | null {
+            for (const folder of folders) {
+                // Search in the current folder's files
+                for (const file of folder.files) {
+                    if (file.type !== "folder" && file.id === id) {
+                        return file;
+                    }
+                    // If the file is a folder, perform a recursive search
+                    if (file.type === "folder") {
+                        const foundFile = searchFolders([file as FolderType]);
+                        if (foundFile) {
+                            return foundFile;
+                        }
+                    }
+                }
+            }
+            return null; // If no file is found
+        }
+        return searchFolders(folders);
+    }
     const handleDeleteFolder = async (folderId: number) => {
+        //do a confirmatiuon alert
+        const file = findFileById(folderId, folders);
+        if (!file) {
+            alert("File not found");
+            return;
+        }
+
+        const filename = file.name;
+        //in the confirmation alert, force the user to rewrite the filename to confirm deletion
+        const confirmation = prompt(`Please type the name of the file to confirm deletion: ${filename}`);
+        if (confirmation !== filename) {
+            alert("File name does not match. Deletion cancelled.");
+            return
+        }
         await FileService.deleteFile(folderId);
+        setSelectedFile(null);
         await fetchUserFiles(userData.id);
     };
-    const handleCryptFile = async (fileId: number,pwd:string) => {
-        // show modal to get password to encrypt file
+    const handleRenameFile = async (fileId: number) => {
+        setSelectToRenameFile(fileId);
+        setIsRenameModalOpen(true);
+    }
+    const handleCryptFile = async (fileId: number, pwd: string) => {
 
-        await FileService.cryptFile(fileId,pwd);
+        await FileService.cryptFile(fileId, pwd);
         await fetchUserFiles(userData.id);
     }
 
-    const handleFileDownload = async (fileId: number,MasterPassword?:string) => {
+    const handleFileDownload = async (fileId: number, MasterPassword?: string) => {
         try {
-            const fileBlobOrError = await FileService.downloadFile(fileId,MasterPassword);
+            const fileBlobOrError = await FileService.downloadFile(fileId, MasterPassword);
             const fileOrError = await FileService.getFile(fileId);
 
             if (fileOrError instanceof CustomError) {
@@ -124,7 +167,7 @@ export default function VaultPage() {
                 alert(fileOrError.message);
                 return;
             }
-    
+
             if (fileBlobOrError instanceof CustomError) {
                 console.error(fileBlobOrError.message);
                 alert(fileBlobOrError.message);
@@ -143,11 +186,23 @@ export default function VaultPage() {
             alert('Failed to download file');
         }
     };
-    
-    const handleModalSubmit = async (name: string, type: "folder" | "pdf" | "txt" | "png" | "jpg" | "other", encrypted: boolean, MasterPassword:string, file: File) => {
+
+    const handleModalRenameSubmit = async (newName: string) => {
+        try {
+            // rename file
+            await FileService.renameFile(selectToRenameFile!, newName);
+            await fetchUserFiles(userData.id);
+            // Close the modal
+            setIsRenameModalOpen(false);
+        } catch (err) {
+            alert("Error fetching user data");
+        }
+    };
+
+    const handleModalSubmit = async (name: string, isFolder: boolean, encrypted: boolean, MasterPassword: string, file: File) => {
         try {
             // Upload the file
-            await FileService.uploadFile(file, name, type, currentFolderId, encrypted,MasterPassword);
+            await FileService.uploadFile(file, name, isFolder, currentFolderId, encrypted, MasterPassword);
             await fetchUserFiles(userData.id);
             // Close the modal
             setIsModalOpen(false);
@@ -167,11 +222,12 @@ export default function VaultPage() {
                                     id={folder.id}
                                     name={folder.name}
                                     files={folder.files}
-                                    isOpen={folder.isOpen || false}
+                                    isOpen={true}
                                     onToggle={() => toggleFolder(index)}
                                     onFileClick={handleFileClick}
                                     onAddFile={handleAddFile}
                                     onDeleteFile={handleDeleteFolder}
+                                    onRenameFile={handleRenameFile}
                                 />
                             </li>
                         ))}
@@ -187,7 +243,7 @@ export default function VaultPage() {
                                         <HiX onClick={handleClearSelection} />
                                     </div>
                                     <PreviewFile
-                                            selectedFile={selectedFile}
+                                        selectedFile={selectedFile}
                                     />
                                     {["pdf", "plain", "png", "jpg"].indexOf(selectedFile.type) === -1 && (
                                         <div className="flex items-center justify-center w-full h-full">
@@ -203,7 +259,7 @@ export default function VaultPage() {
                         </div>
                         <div className="col-span-1">
                             <div className="flex flex-col justify-center h-full">
-                                <DLButton selectedFile={selectedFile} handleFileDownload={handleFileDownload}/>
+                                <DLButton selectedFile={selectedFile} handleFileDownload={handleFileDownload} />
                                 <DeleteButton selectedFile={selectedFile} handleDeleteFolder={handleDeleteFolder} />
                                 <CryptButton selectedFile={selectedFile} handleCryptFile={handleCryptFile}></CryptButton>
                             </div>
@@ -216,6 +272,17 @@ export default function VaultPage() {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleModalSubmit}
             />
+            {folders.length > 0 && folders[0].files.length > 0 && (
+                <FileRenameModal
+                    isOpen={isRenameModalOpen}
+                    oldName={findFileById(selectToRenameFile!, folders)?.name || ''}
+                    onClose={() => setIsRenameModalOpen(false)}
+                    onSubmit={handleModalRenameSubmit}
+                />
+            )}
+
+
+
         </div>
     );
 }

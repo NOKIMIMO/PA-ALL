@@ -72,6 +72,7 @@ const FilePreview = ({ selectedFile }: FilePreviewProps) => {
     return (
         <div className="flex items-center justify-center w-full h-full">
             <p className="text-gray-500">No preview available for this file type</p>
+            <p className="text-gray-500"> {selectedFile.type}</p>
         </div>
     );
 };

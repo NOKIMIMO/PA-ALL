@@ -1,10 +1,11 @@
-import { SelectUserRequest, UpdateUserRequest } from '../Validators/userValidator';
+import { BanTicket } from './../database/models/banTicket';
+import { ListUserValidationRequest, SelectUserRequest, UpdateUserRequest } from '../Validators/userValidator';
 import { User } from './../database/models/user';
 import { DataSource } from "typeorm";
 import { db } from './../database/db';
 import { compare } from 'bcrypt';
 import { Token } from '../database/models/token';
-import { ListItemRequest } from '../Validators/commonValidator';
+import { CustomError } from '../common/error/customError';
 
 export class UserUseCase {
     constructor(private readonly db:DataSource) {}
@@ -16,6 +17,19 @@ export class UserUseCase {
         }
         return user.role === 'ADMIN'
     }
+    async getBanMessage(userid:number): Promise<BanTicket|CustomError>{
+        const UserRepo = this.db.getRepository(User)
+        const BanTicketRepo = this.db.getRepository(BanTicket)
+        const user = await UserRepo.findOneBy({ id: userid })
+        if (!user) {
+            return new CustomError(404, 'User not found')
+        }
+        const banTicket = await BanTicketRepo.findOneBy({ user_id: userid, active: true })
+        if (!banTicket) {
+            return new CustomError(400, 'User was manually deactivated, contact support at mail@mail.com')
+        }
+        return banTicket
+    }
 
     async isUserSuperAdmin(userid:number): Promise<boolean>{
         const user = await this.getUserById(userid)
@@ -25,9 +39,13 @@ export class UserUseCase {
         return user.role === 'SUPER_ADMIN'
     }
 
-    async listUsers(filter: ListItemRequest): Promise<{ users: User[]; totalCount: number; }> {
+    async listUsers(filter: ListUserValidationRequest): Promise<{ users: User[]; totalCount: number; }> {
     const query = this.db.createQueryBuilder(User, 'user')
         .where("user.active = :active", { active: true }); // Ajoutez cette condition pour filtrer les utilisateurs inactifs
+        
+    if (filter.role) {
+        query.andWhere("user.role = :role", { role: filter.role });
+    }
     if (filter.limit) {
         query.limit(filter.limit);
         if (filter.page) {
@@ -38,11 +56,13 @@ export class UserUseCase {
     return { users, totalCount };
 }
 
-    async createUser(email:string,hashedPassword:string): Promise<User>{
+    async createUser(email:string,hashedPassword:string,firstname:string,lastname:string): Promise<User>{
         const userRepository = db.getRepository(User)
         return await userRepository.save({
             email: email,
-            password: hashedPassword
+            password: hashedPassword,
+            lastname: firstname,
+            firstname: lastname,
         });
     }
     async validateToken(token:string): Promise<User | null>{

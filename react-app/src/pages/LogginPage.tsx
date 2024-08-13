@@ -5,10 +5,13 @@ import { CustomError } from '../commons/Error';
 import { useToast } from '../context/ToastManager';
 import { ToastType } from '../enum/toast';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 export default function LogginPage() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        firstname: '',
+        lastname: '',
         remember_me: false
     });
     const [error, setError] = useState('');
@@ -16,8 +19,8 @@ export default function LogginPage() {
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
-    const { addToast } = useToast(); 
-
+    const { addToast } = useToast();
+    const { setUser, fetchUserData } = useUser();
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -44,7 +47,9 @@ export default function LogginPage() {
                 setLoading(false);
             } else {
                 // Login successful, redirect to homepage with token in local storage
-                addToast('Login successful', ToastType.SUCCESS); 
+                localStorage.setItem('token', result.token);
+                await fetchUserData();
+                addToast('Login successful', ToastType.SUCCESS);
                 navigate('/');
             }
         } else {
@@ -54,7 +59,9 @@ export default function LogginPage() {
                 setError(result.message);
                 setLoading(false);
             } else {
-                addToast('Register successful', ToastType.SUCCESS); 
+                localStorage.setItem('token', result.token);
+                await fetchUserData(); // Fetch user data using the token
+                addToast('Register successful', ToastType.SUCCESS);
                 navigate('/');
             }
         }
@@ -97,7 +104,7 @@ export default function LogginPage() {
                                             className="w-full text-base px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-400"
                                             type="email"
                                             name="email"
-                                            id="email"
+                                            id="emailSignUp"
                                             placeholder="mail@gmail.com"
                                             value={formData.email}
                                             onChange={handleChange}
@@ -143,6 +150,37 @@ export default function LogginPage() {
                                                 <a href="#" className="text-accent hover:text-info hover:link">
                                                     Forgot your password?
                                                 </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {!isLogin && (
+                                        // last name and firstname
+                                        <div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-700 tracking-wide">First Name</label>
+                                                <input
+                                                    className="w-full text-base px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-400"
+                                                    type="text"
+                                                    name="firstname"
+                                                    id="firstname"
+                                                    placeholder="John"
+                                                    value={formData.firstname}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-700 tracking-wide">Last Name</label>
+                                                <input
+                                                    className="w-full text-base px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-400"
+                                                    type="text"
+                                                    name="lastname"
+                                                    id="lastname"
+                                                    placeholder="Doe"
+                                                    value={formData.lastname}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
                                             </div>
                                         </div>
                                     )}

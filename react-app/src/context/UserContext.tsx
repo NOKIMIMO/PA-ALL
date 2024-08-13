@@ -12,6 +12,7 @@ type User = {
 type UserContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
+  fetchUserData: () => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -19,30 +20,30 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        if (localStorage.getItem('token')) {
-          const data = await UserService.getUserDataByToken();
-          if (data instanceof CustomError) {
-            localStorage.removeItem('token');
-            setUser(null);
-          } else {
-            setUser(data);
-          }
+  const fetchUserData = async () => {
+    try {
+      if (localStorage.getItem('token')) {
+        const data = await UserService.getUserDataByToken();
+        if (data instanceof CustomError) {
+          localStorage.removeItem('token');
+          setUser(null);
+        } else {
+          setUser(data);
         }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        localStorage.removeItem('token');
-        setUser(null);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      localStorage.removeItem('token');
+      setUser(null);
+    }
+  };
 
+  useEffect(() => {
     fetchUserData();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, fetchUserData }}>
       {children}
     </UserContext.Provider>
   );

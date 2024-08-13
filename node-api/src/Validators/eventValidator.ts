@@ -21,7 +21,6 @@ export interface createEventValidationRequest  {
     event_date: Date // format date with time zone (%yyyy-%mm-%dd-T%HH:%MM:%SS.000Z%)
     location: string //format {rue}, {ville}, {code_postal}
     usersId?: number[]
-    isAG?: boolean
 }
 
 export const createEventValidation = Joi.object<createEventValidationRequest>({
@@ -31,7 +30,6 @@ export const createEventValidation = Joi.object<createEventValidationRequest>({
     event_date: Joi.date().required(),
     location: Joi.string().required(),
     usersId: Joi.array().items(Joi.number()).optional(),
-    isAG: Joi.boolean().optional()
 
 }).options({ abortEarly: false });
 
@@ -76,3 +74,19 @@ export interface selectEventByUserRequest  {
 export const selectEventByUserValidation = Joi.object<selectEventByUserRequest>({
     userId: Joi.number().required()
 })
+
+export const addEventMannagerValidation = Joi.object<addEventMannagerRequest>({
+    usersId: Joi.array().items(Joi.number()).required()
+})
+
+export interface addEventMannagerRequest{
+    usersId: number[]
+}
+
+export const removeEventMannagerValidation = Joi.object<removeEventMannagerRequest>({
+    usersId: Joi.array().items(Joi.number()).required()
+})
+
+export interface removeEventMannagerRequest{
+    usersId: number[]
+}

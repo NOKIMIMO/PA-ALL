@@ -1,6 +1,7 @@
 import * as Joi from "joi";
 import { User } from "../database/models/user";
 import { token } from "morgan";
+import { user_access_type } from "../common/enum/access-type";
 
 
 export interface ListUserResponse{
@@ -10,6 +11,17 @@ export interface ListUserResponse{
 
 export interface SelectUserRequest  {
     id: number
+}
+
+export interface UserResponse {
+    id: number
+    email: string
+    role: string
+    lastname: string
+    firstname: string
+    active: boolean
+    createdAt: Date
+    updatedAt: Date
 }
 
 export const selectUserValidation = Joi.object({
@@ -42,11 +54,15 @@ export const giveRoleToUserValidation = Joi.object({
 export const createUserValidation = Joi.object<CreateUserValidationRequest>({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
+    firstname: Joi.string().required(),
+    lastname: Joi.string().required(),
 }).options({ abortEarly: false });
 
 export interface CreateUserValidationRequest  {
     email: string
     password: string
+    firstname: string
+    lastname: string
 }
 
 export const LoginUserValidation = Joi.object<LoginUserValidationRequest>({
@@ -57,4 +73,16 @@ export const LoginUserValidation = Joi.object<LoginUserValidationRequest>({
 export interface LoginUserValidationRequest  {
     email: string
     password: string
+}
+
+export const ListUserValidation = Joi.object<ListUserValidationRequest>({
+    limit: Joi.number().optional(),
+    page: Joi.number().optional(),
+    role: Joi.string().valid(...Object.values(user_access_type)).optional()
+}).options({ abortEarly: false });
+
+export interface ListUserValidationRequest {
+    limit?: number
+    page?: number
+    role?: user_access_type
 }

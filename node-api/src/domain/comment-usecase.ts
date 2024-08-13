@@ -26,8 +26,10 @@ export class CommentUseCase {
         // Fetch top-level comments
         const query = this.db.createQueryBuilder(Comment, 'comment')
             .where('comment.postId = :postId', { postId: filter.postId })
+            
             .andWhere('comment.parentId is NULL');
     
+            
         if (filter.limit) {
             query.limit(filter.limit);
             if (filter.page) {

@@ -1,7 +1,7 @@
 import { DataSource } from "typeorm";
 import { File } from "../database/models/file";
 import { CustomError } from "../common/error/customError";
-import { CreateFileRequest } from "../Validators/fileValidator";
+import { CreateFileRequest, UpdateFileRequest } from "../Validators/fileValidator";
 import {CreateUserFileRequest } from "../Validators/userFileValidator";
 import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
 import { promisify } from 'util';
@@ -39,17 +39,23 @@ export class FileUseCase {
                     throw new CustomError(400, "Parent file is not a folder")
                 }
             }
+            const extension = data.mimetype.split('/')[1] || 'other'
+            //check if name finishes with extension
+            if (!data.name.endsWith(extension)) {
+                data.name = data.name + '.' + extension
+            }
             const newFile = fileRepo.create({
                 name: data.name,
                 path: data.path,
-                type: data.type,
+                type: extension,
                 size: data.size,
                 userId: userId,
                 // extension: data.mimetype.split('/').pop(),
-                extension: data.name.split('.')[1] || 'txt',
+                extension: extension,
                 readOnly: data.readOnly || false,
                 parentId: data.parentId,
-            })            
+            })
+            console.log(newFile)            
             if (data.encrypted === true && data.masterPassword) {
                 //use lib to encrypt local file
                 // Encryption
@@ -95,10 +101,40 @@ export class FileUseCase {
         }
     }
 
-    async updateFile(file: File): Promise<File> {
+    async updateFile(fileId : number,userId: number,fileRequest: UpdateFileRequest): Promise<File> {
         try {
+            
             const fileRepo = this.dataSource.getRepository(File)
+            const file = await fileRepo.findOneBy({ id: fileId })
+            if (!file) {
+                throw new CustomError(404, "File not found")
+            }
+            if (file.userId !== userId) {
+                throw new CustomError(403, "Unauthorized")
+            }
+            if (file.type === 'folder') {
+                //if file is a folder, update only the name
+                if(fileRequest.name){
+                    file.name = fileRequest.name
+                }
+            }else{
+                if (fileRequest.name) {
+                    //keep extension
+                    const extension = file.name.split('.').pop()
+                    file.name = fileRequest.name + '.' + extension
+                }
+                if (fileRequest.type) {
+                    file.type = fileRequest.type
+                }
+                if (fileRequest.readOnly) {
+                    file.readOnly = fileRequest.readOnly
+                }
+                if (fileRequest.parentId) {
+                    file.parentId = fileRequest.parentId
+                }
+            }
             return await fileRepo.save(file)
+            
         } catch (err) {
             throw new CustomError(500, "Failed to update file")
         }

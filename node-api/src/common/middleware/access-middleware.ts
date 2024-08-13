@@ -3,7 +3,7 @@ import { db } from "../../database/db";
 import { User } from "../../database/models/user";
 import { user_access_type } from "../enum/access-type";
 import { JwtPayload } from "jsonwebtoken";
-
+// maybe will be deleted
 export const accessMiddleware = (getAccessList: () => user_access_type[]) => {
     return async (req: Request & { user?: JwtPayload }, res: Response, next: NextFunction) => {
         const userRepository = db.getRepository(User);

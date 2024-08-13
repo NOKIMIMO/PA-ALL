@@ -78,7 +78,7 @@ export default function ContactForm({ short }: ContactFormProps) {
                             <label htmlFor="email" className="label-text mb-2">Email :</label>
                             <input 
                                 type="email" 
-                                id="email" 
+                                id="emailContactForm" 
                                 name="email" 
                                 className='input input-bordered w-full max-w-xs' 
                                 value={formData.email} 

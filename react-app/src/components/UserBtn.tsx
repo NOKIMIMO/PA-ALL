@@ -3,6 +3,7 @@ import AuthService from '../services/AuthService';
 import { useToast } from '../context/ToastManager';
 import { ToastType } from '../enum/toast';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 interface UserBtnProps {
     notif: boolean;
     userData: any;
@@ -11,11 +12,13 @@ interface UserBtnProps {
 export default function UserBtn({ notif,userData }: UserBtnProps) {
     const { addToast } = useToast(); 
     const navigate = useNavigate();
+    const { setUser } = useUser(); 
     const handleLogout = async () => {
         try {
             await AuthService.logout();
-            console.log(localStorage.getItem('token'));
             addToast('Logout successful', ToastType.SUCCESS); 
+            localStorage.removeItem('token');
+            setUser(null);
             navigate('/');
         } catch (error) {
             console.error('Error logging out:', error);
