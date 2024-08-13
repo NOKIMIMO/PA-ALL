@@ -1,3 +1,4 @@
+import { setDatasets } from 'node_modules/react-chartjs-2/dist/utils';
 import { CustomError } from '../commons/Error';
 
 
@@ -30,7 +31,17 @@ class UserService implements IUserService{
             return new CustomError(response.status, data.error || 'Something went wrong');
         }
         // console.log(data)
-        return data;
+        const formatedReturn ={
+            id: data.user.id,
+            email: data.user.email,
+            role: data.user.role,
+            firstname: data.user.firstname,
+            lastname: data.user.lastname,
+            createdAt: data.user.createdAt,
+            active: data.user.active,
+            license: data.user.license
+        }
+        return formatedReturn;
     }
     async getUserList(page: number, limit: number): Promise<any> {
         const url = new URL('/api/v1/users', window.location.origin);
@@ -63,7 +74,18 @@ class UserService implements IUserService{
         if (!response.ok) {
             return new CustomError(response.status, data.error || 'Something went wrong');
         }
-        return data;
+        
+        const formatedReturn ={
+            id: data.id,
+            email: data.email,
+            role: data.role,
+            firstname: data.firstname,
+            lastname: data.lastname,
+            createdAt: data.createdAt,
+            active: data.active,
+            license : data.license,
+        }
+        return formatedReturn;
     }
     async deleteUserById(id: string): Promise<any> {
         const response = await fetch(`/api/v1/users/${id}`, {

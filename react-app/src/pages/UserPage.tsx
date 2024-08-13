@@ -1,10 +1,11 @@
-import { CustomError } from "../commons/Error";
-import { useParams } from "react-router-dom"; // Importez useNavigate pour la redirection
-import UserService from "../services/UserService";
-import { EventService } from "../services/EventService";
+import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import { useUser } from '../context/UserContext';
+import UserService from "../services/UserService";
+import { EventService } from "../services/EventService";
+import { CustomError } from "../commons/Error";
 
 export default function UserPage() {
     const { number } = useParams<{ number: string }>();
@@ -14,24 +15,28 @@ export default function UserPage() {
     const [isOwner, setIsOwner] = useState<boolean>(false);
     const [userEvents, setUserEvents] = useState<any[]>([]);
     const [eventsError, setEventsError] = useState<CustomError | null>(null);
+    const { user, fetchUserData } = useUser(); // Access user and fetchUserData from context
+    const navigate = useNavigate();
 
     const eventService = new EventService();
-    // const navigate = useNavigate(); // Utilisez useNavigate pour la redirection
 
     useEffect(() => {
         if (number === undefined || isNaN(parseInt(number))) {
             location.href = '/404';
             return;
         }
-
-        const fetchUserData = async () => {
+        const loadUserData = async () => {
             try {
-                const data = await UserService.getUserById(number);
-                const user = await UserService.getUserDataByToken();
-                if (data.id === user.id) {
-                    setIsOwner(true);
+                if (!user) {
+                    await fetchUserData();
                 }
-                setUserData(data);
+                if (user && user.id) {
+                    const data = await UserService.getUserById(number);
+                    setUserData(data);
+                    if (data.id === user.id) {
+                        setIsOwner(true);
+                    }
+                }
             } catch (err) {
                 if (err instanceof CustomError) {
                     setError(err);
@@ -45,12 +50,13 @@ export default function UserPage() {
 
         const fetchUserEvents = async () => {
             try {
-                const response = await eventService.getMyEvents();
-                console.log('Fetched events:', response); // Verify events are fetched
-                if (response && Array.isArray(response.events)) {
-                    setUserEvents(response.events);
-                } else {
-                    setEventsError(new CustomError(500, 'Invalid events format'));
+                if (user && (user.role.toLowerCase() === 'licensed' || user.role.toLowerCase() === 'admin' || user.role.toLowerCase() === 'super_admin')) {
+                    const response = await eventService.getMyEvents();
+                    if (response && Array.isArray(response.events)) {
+                        setUserEvents(response.events);
+                    } else {
+                        setEventsError(new CustomError(500, 'Invalid events format'));
+                    }
                 }
             } catch (err) {
                 if (err instanceof CustomError) {
@@ -61,20 +67,36 @@ export default function UserPage() {
             }
         };
 
-        fetchUserData();
+        loadUserData();
         fetchUserEvents();
-    }, [number]);
+    }, [user, number, fetchUserData]);
 
-    if (loading) {
-        return <div className="flex justify-center items-center h-screen"><span className="loading loading-spinner text-primary"></span> Loading...</div>;
+    if (loading || !user) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <span className="loading loading-spinner text-primary"></span> Loading...
+            </div>
+        );
     }
 
     if (error) {
-        return <div className="alert alert-error shadow-lg mt-4"><div><span>Error: {error.message}</span></div></div>;
+        return (
+            <div className="alert alert-error shadow-lg mt-4">
+                <div>
+                    <span>Error: {error.message}</span>
+                </div>
+            </div>
+        );
     }
 
     if (eventsError) {
-        return <div className="alert alert-error shadow-lg mt-4"><div><span>Error fetching events: {eventsError.message}</span></div></div>;
+        return (
+            <div className="alert alert-error shadow-lg mt-4">
+                <div>
+                    <span>Error fetching events: {eventsError.message}</span>
+                </div>
+            </div>
+        );
     }
 
     const eventDates = userEvents.map(event => {
@@ -85,24 +107,62 @@ export default function UserPage() {
         };
     });
 
-    // const handleDayClick = (date) => {
-    //     const clickedDate = date.toDateString();
-    //     const event = eventDates.find(event => event.date === clickedDate);
-    //     if (event) {
-    //         navigate(`../../Event/EventPage/${event.id}`); // Redirige vers la page de l'événement
-    //     }
-    // };
-
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-4">User Page</h1>
             {userData && (
-                <div className="card w-full bg-base-100 shadow-xl mb-6">
-                    <div className="card-body">
-                        <h2 className="card-title">{userData.name}</h2>
-                        <p>ID: {userData.id}</p>
-                        <p>Email: {userData.email}</p>
-                        {isOwner && <p className="text-success">You are viewing your own profile</p>}
+                <div className="flex gap-6 mb-6">
+                    {/* Left Section - User Data */}
+                    <div className="w-1/2">
+                        <div className="card w-full bg-base-100 shadow-xl">
+                            <div className="card-body">
+                                <h2 className="card-title">{userData.name}</h2>
+                                <p>ID: {userData.id}</p>
+                                <p>Email: {userData.email}</p>
+                                <p>Role: {userData.role}</p>
+                                <p>Firstname: {userData.firstname}</p>
+                                <p>Lastname: {userData.lastname}</p>
+                                <p>Created At: {new Date(userData.createdAt).toLocaleString()}</p>
+                                {isOwner && (
+                                    <p className="text-success">
+                                        You are viewing your own profile
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Section - License Info */}
+                    <div className="w-1/2">
+                        <div className="card w-full bg-base-100 shadow-xl">
+                            <div className="card-body">
+                                <h2 className="card-title">License Tier</h2>
+                                <p>
+                                    Current Tier: {userData.license.active ? 'Member' : 'Free'}
+                                </p>
+                                <p>
+                                    Expiry Date: {new Date(userData.license.expirationDate).toLocaleString()}
+                                </p>
+                                {userData.license.active && (
+                                    <button
+                                    className="btn btn-success mt-4 "
+                                    onClick={() => navigate('/licenses')}
+                                    disabled
+                                >
+                                    You already have an active license
+                                </button>
+                                )}
+                                {!userData.license && (
+                                    <button
+                                        className="btn btn-primary mt-4"
+                                        onClick={() => navigate('/licenses')}
+                                    >
+                                        Obtain License
+                                    </button>
+                                )}
+
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -111,7 +171,7 @@ export default function UserPage() {
                     <div className="card-body">
                         <h2 className="card-title">User Events</h2>
                         <Calendar
-                            tileContent={({ date, view }: { date: Date; view: string }) => {
+                            tileContent={({ date, view }) => {
                                 if (view === 'month') {
                                     const currentDate = date.toDateString();
                                     const event = eventDates.find(event => event.date === currentDate);
