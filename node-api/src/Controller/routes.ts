@@ -10,6 +10,8 @@ import AgController from './AgController';
 import AgTaskController from './AgTaskController';
 import TaskController from './TaskController';
 import CommonController from './CommonController';
+import stripeRoutes from './StripeController'; // Ajoutez cette ligne
+import licenseController from './LicenseController'; // Ajoutez cette ligne
 import { authMiddleware } from "../common/middleware/auth-middleware";
 import { accessMiddleware } from "../common/middleware/access-middleware";
 import { user_access_type } from "../common/enum/access-type";
@@ -19,7 +21,6 @@ import { Mailer } from '../common/mailer';
 import { CustomError } from '../common/error/customError';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 
 export const routes = (app: Express) => {
     app.get('/api/v1/health', async (req, res) => {
@@ -58,53 +59,8 @@ export const routes = (app: Express) => {
         accessMiddleware(() => [user_access_type.SUPER_ADMIN,user_access_type.ADMIN,user_access_type.EMPLOYEE]),
         TaskController);
     app.use('/api/v1/contact', contactRoutes); // Ajoutez cette ligne
-    app.post('/api/v1/create-checkout-session', async (req, res) => {
-        try {
-            const { amount } = req.body; // Récupérez le montant depuis la requête
-
-            if (!amount || isNaN(amount) || amount <= 0) {
-                return res.status(400).json({ error: 'Invalid amount' });
-            }
-
-            const { headers } = req;
-            const origin = typeof headers.referer === 'string' ? new URL(headers.referer).origin : 'http://localhost:5173';
-
-            const session = await stripe.checkout.sessions.create({
-                payment_method_types: ['card'],
-                line_items: [
-                    {
-                        price_data: {
-                            currency: 'usd',
-                            product_data: {
-                                name: 'Donation',
-                            },
-                            unit_amount: amount * 100, // Amount in cents
-                        },
-                        quantity: 1,
-                    },
-                ],
-                mode: 'payment',
-                success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${origin}/?cancel=true&session_id={CHECKOUT_SESSION_ID}`,
-            });
-
-            res.json({ id: session.id });
-        } catch (error) {
-            console.error('Error creating checkout session:', error);
-            res.status(500).json({ error: 'Failed to create checkout session' });
-        }
-    });
-    app.get('/api/v1/checkout-session/:sessionId', async (req, res) => {
-        const { sessionId } = req.params;
-
-        try {
-            const session = await stripe.checkout.sessions.retrieve(sessionId);
-            res.json(session);
-        } catch (error) {
-            console.error('Error retrieving checkout session:', error);
-            res.status(500).json({ error: 'Failed to retrieve checkout session' });
-        }
-    });
+    app.use('/api/v1/payment', stripeRoutes); // Ajoutez cette ligne
+    app.use('/api/v1/licenses', licenseController); // Ajoutez cette ligne
     app.post('/api/v1/send-email', async (req, res) => {
         const mailer = new Mailer();
 

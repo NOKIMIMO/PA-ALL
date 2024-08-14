@@ -12,7 +12,7 @@ export const accessMiddleware = (getAccessList: () => user_access_type[]) => {
             return res.status(401).json({ "error": "Unauthorized" });
         }
         const access_list = getAccessList(); // Get the access list dynamically
-        if (!access_list.includes(user.role as user_access_type)) {
+        if (!access_list.includes(user.role.toLowerCase() as user_access_type)) {
             return res.status(403).json({ "error": "Access Forbidden" });
         }
         next(); // Call next() to continue to the next middleware or route handler

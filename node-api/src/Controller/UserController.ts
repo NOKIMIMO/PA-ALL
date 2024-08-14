@@ -42,7 +42,7 @@ router.get('/self',
                 throw new CustomError(404, 'User not found');
             }
             res.status(200);
-            res.json({ id: user.id, email: user.email, role: user.role });
+            res.json({ user});
         } catch (error) {
             console.log(error);
             res.status(500);
