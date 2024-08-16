@@ -7,10 +7,6 @@ import { UserProvider } from './context/UserContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastManager } from './context/ToastManager';
 
-console.log("Vites is running in mode: ", import.meta.env.MODE);
-console.log("Vites is running in env prod : ", import.meta.env.PROD);
-console.log("Vites is running in env dev : ", import.meta.env.DEV);
-
 function App() {
   const location = useLocation(); // Use useLocation hook
 

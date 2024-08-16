@@ -14,6 +14,8 @@ import PostPage from '../pages/Post/PostPage';
 import VoteListPage from '../pages/VoteListPage';
 import VoteDetailPage from '../pages/VoteDetailPage';
 import DonationPage from '../pages/DonationPage';
+import LicensePage from '../pages/LicensePage';
+import PaymentRedirectPage from '../pages/PaymentRedirectPage';
 
 const routes: IRoute[] = [
     {
@@ -40,12 +42,6 @@ const routes: IRoute[] = [
         component: AdminPage,
         exact: true
     },
-    // {
-    //     path: '/preview/:fileId',
-    //     name: 'fileName',
-    //     component: FilePreviewPage,
-    //     exact: true
-    // },
     {
         path: '/user/:number',
         name: 'User Layout',
@@ -64,12 +60,6 @@ const routes: IRoute[] = [
         path:'/vault',
         name: 'Vault Page',
         component: VaultPage,
-        exact: true
-    },
-    {
-        path: '*',
-        name: 'Not Found',
-        component: NotFound,
         exact: true
     },
     {
@@ -113,7 +103,25 @@ const routes: IRoute[] = [
         name: 'Donate',
         component: DonationPage,
         exact: true
-    }
+    },
+    {
+        path: '/licenses',
+        name: 'License',
+        component: LicensePage,
+        exact: true
+    },
+    {
+        path: '/payment-redirect',
+        name: 'Stripe Redirect',
+        component: PaymentRedirectPage,
+        exact: true
+    },
+    {
+        path: '*',
+        name: 'Not Found',
+        component: NotFound,
+        exact: true
+    },
 ]
 
 export default routes;

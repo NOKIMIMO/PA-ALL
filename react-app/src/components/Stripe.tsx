@@ -1,5 +1,6 @@
 import { loadStripe } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
+import { StripeService } from '../services/StripeService';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUB);
 
@@ -17,23 +18,8 @@ const StripeCheckoutButton = () => {
                 setError('Please enter a valid amount');
                 return;
             }
-
             try {
-                const response = await fetch('/api/v1/create-checkout-session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        amount: parsedAmount, // Envoyez le montant au serveur
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to create checkout session');
-                }
-
-                const session = await response.json();
+                const session = await StripeService.createCheckoutSession(parsedAmount);
                 setSessionId(session.id);
                 setError(''); // Réinitialisez l'erreur si la création réussit
             } catch (error) {

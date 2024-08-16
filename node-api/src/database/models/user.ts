@@ -9,6 +9,7 @@ import { UserVote } from "./userVote";
 import { BanTicket } from "./banTicket";
 import { EventManager } from "./eventMannager";
 import { Ag } from "./ag";
+import { License } from "./license";
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
@@ -53,6 +54,9 @@ export class User {
     @OneToMany(() => Token, token => token.user, { onDelete: 'CASCADE'})
     tokens: Token[];
 
+    @OneToMany(() => License, license => license.user)
+    license: License[];
+
     @OneToMany(() => Event, events => events.user)
     events: Event[];
     @OneToMany(() => Post, posts => posts.user)
@@ -76,7 +80,7 @@ export class User {
          active: boolean,posts: Post[],comments: Comment[],
          files: File[], userVotes: UserVote[],
          lastname: string, firstname: string, banTickets: BanTicket[], banTicketsIssued: BanTicket[],
-         eventManager: EventManager[], agMannager: Ag[]
+         eventManager: EventManager[], agMannager: Ag[], license: License[]
         ) {
         this.id = id;
         this.email = email; 
@@ -97,5 +101,6 @@ export class User {
         this.banTicketsIssued=banTicketsIssued;
         this.eventManager=eventManager;
         this.agMannager=agMannager;
+        this.license=license;
     }
 };

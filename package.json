@@ -9,10 +9,8 @@
         "lint": "npm run lint --prefix react-app"
     },
     "devDependencies": {
-        "@types/nodemailer": "^6.4.15",
         "concurrently": "^8.2.2"
     },
     "dependencies": {
-        "nodemailer": "^6.9.14"
     }
 }
