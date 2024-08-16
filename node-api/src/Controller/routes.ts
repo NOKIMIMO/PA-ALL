@@ -1,4 +1,5 @@
-import { Express,Response } from 'express';
+import { Express, Response } from 'express';
+import path from 'path';
 import userRoutes from './UserController';
 import authRoutes from './AuthController';
 import eventRoutes from './EventController';
@@ -17,6 +18,7 @@ import Stripe from "stripe";
 import nodemailer from 'nodemailer';
 import { Mailer } from '../common/mailer';
 import { CustomError } from '../common/error/customError';
+import fs from 'fs';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -151,4 +153,20 @@ export const routes = (app: Express) => {
             res.status(500).send('Error sending email');
         }
     });
+    app.get('/api/v1/version', async (req, res) => {
+        try {
+            const filePath = path.resolve("config.xml");
+            const content = fs.readFileSync(filePath, 'utf8');
+            res.setHeader('Content-Type', 'application/xml');
+            res.send(content);
+            return ;
+        } catch (err) {
+            if (err instanceof CustomError) {
+                res.status(err.code).send(err.message);
+            } else {
+                res.status(500).send({ error: "Failed to update files" });
+            }
+        }
+    }
+);
 };

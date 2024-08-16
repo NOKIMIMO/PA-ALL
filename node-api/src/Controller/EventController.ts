@@ -252,9 +252,9 @@ router.get('/:eventId/managed',
         const eventId = parseInt(req.params.eventId);
         try {
             const EventUsecase = new EventUseCase(db);
-            const event = await EventUsecase.getMannagerOfEvent(eventId);
+            const users = await EventUsecase.getMannagerOfEvent(eventId);
             res.status(200);
-            res.json(event);
+            res.json({ users: users });
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code).send({error : error.message});
