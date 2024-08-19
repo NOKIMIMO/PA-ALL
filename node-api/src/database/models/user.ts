@@ -10,6 +10,7 @@ import { BanTicket } from "./banTicket";
 import { EventManager } from "./eventMannager";
 import { Ag } from "./ag";
 import { License } from "./license";
+import { user_access_type } from "../../common/enum/access-type";
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
@@ -24,7 +25,7 @@ export class User {
     password: string
 
     @Column({
-        default: 'USER'
+        default: user_access_type.USER
     })
     role: string
     @Column({

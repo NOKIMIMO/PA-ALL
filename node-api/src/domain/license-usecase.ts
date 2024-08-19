@@ -5,6 +5,7 @@ import { User } from "../database/models/user";
 import { ListItemRequest } from "../Validators/commonValidator";
 import { UserResponse } from "../Validators/userValidator";
 import Stripe from "stripe";
+import { user_access_type } from "../common/enum/access-type";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -37,7 +38,7 @@ export class LicenseUseCase {
             expirationDate: expirationDate
         }])
         await licenseRepo.save(license);
-        user.role = 'LICENSED';
+        user.role = user_access_type.LICENSED;
         await userRepo.save(user);
 
     }

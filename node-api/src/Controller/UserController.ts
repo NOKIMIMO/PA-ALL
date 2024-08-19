@@ -89,9 +89,12 @@ router.delete('/:id',
 
 
 router.patch('/:id',
+    authMiddleware,
+    accessMiddleware(
+        () => { return [user_access_type.SUPER_ADMIN]; }
+    ),
     validatorMiddleware(selectUserValidation, 'params'),
     validatorMiddleware(updateUserValidation, 'body'),
-    authMiddleware,
     async (req: Request & { user?: User }, res: Response): Promise<void> => {
         const updateUserRequest = req.body;
         const userId = Number(req.params.id); // Récupérez l'ID de l'utilisateur à partir de req.params
