@@ -44,8 +44,9 @@ export class UserUseCase {
         const query = this.db.createQueryBuilder(User, 'user')
             .where("user.active = :active", { active: true }); // Ajoutez cette condition pour filtrer les utilisateurs inactifs
 
+        console.log(filter)
         if (filter.role) {
-            query.andWhere("user.role = :role", { role: filter.role });
+            query.andWhere("user.role = :role", { role: filter.role.toUpperCase() });
         }
         if (filter.limit) {
             query.limit(filter.limit);
