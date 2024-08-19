@@ -19,8 +19,12 @@ export class AgTask{
     @Column()
     max_end_date: Date;
 
-    @ManyToMany(() => AgTask, task => task.id)
-    task: AgTask[]
+    @Column({ name: 'priorityId' ,nullable: true})
+    priorityId: number | null;
+
+    @ManyToOne(() => AgTask, task => task.id ,{nullable: true})
+    @JoinColumn({ name: 'priorityId'  })
+    priority: AgTask | null;
 
     @Column({ name: 'agId' })
     agId: number; 
@@ -37,7 +41,7 @@ export class AgTask{
     
     constructor(id: number, description: string, completed: boolean,
          max_end_date: Date, createdAt: Date, updatedAt: Date,
-         ag: Ag , task: AgTask[], agId: number, title: string) {
+         ag: Ag , agId: number, title: string, priorityId: number, priority: AgTask | null) {
         this.id = id;
         this.description = description;
         this.completed = completed;
@@ -45,9 +49,11 @@ export class AgTask{
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.ag = ag;
-        this.task = task;
         this.agId = agId;
         this.title = title;
+        this.priorityId = priorityId;
+        this.priority = priority;
+
     }
     
     

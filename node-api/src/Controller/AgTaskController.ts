@@ -9,7 +9,7 @@ import { validatorMiddleware } from '../common/middleware/validator-middleware';
 import { JwtPayload } from 'jsonwebtoken';
 import { CustomError } from '../common/error/customError';
 import { TaskAgUseCase } from '../domain/taskAg-usecase';
-import { agTaskSelectOneValidation } from '../Validators/agTaskValidator';
+import { agTaskCreateValidation, agTaskSelectOneValidation, agTaskUpdateValidation } from '../Validators/agTaskValidator';
 import { selectAgValidation } from '../Validators/agValidator';
 
 const router = Router();
@@ -181,7 +181,7 @@ router.get('/:taskId/assigned',
 
 router.post('/',
     authMiddleware,
-    validatorMiddleware(agTaskSelectOneValidation, 'body'),
+    validatorMiddleware(agTaskCreateValidation, 'body'),
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
         const createAgRequest = req.body;
         try {
@@ -204,7 +204,7 @@ router.post('/',
 router.patch('/:taskId',
     authMiddleware,
     validatorMiddleware(agTaskSelectOneValidation, 'params'),
-    validatorMiddleware(agTaskSelectOneValidation, 'body'),
+    validatorMiddleware(agTaskUpdateValidation, 'body'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.id);
         const task = req.body;

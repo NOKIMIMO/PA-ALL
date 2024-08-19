@@ -4,8 +4,8 @@ export const agTaskCreateValidation = Joi.object({
     title: Joi.string().required(),
     description: Joi.string().required(),
     dueDate: Joi.date().required(),
-    priority: Joi.number().required(),
-    eventId: Joi.number().required(),
+    priority: Joi.number().optional(),
+    agId: Joi.number().required(),
     userId: Joi.number().optional()
 }).options({ abortEarly: false });
 
@@ -13,8 +13,8 @@ export interface AgTaskCreateRequest {
     title: string
     description: string
     dueDate: Date
-    priority: number
-    eventId: number
+    priority?: number
+    agId: number
     userId?: number
 }
 

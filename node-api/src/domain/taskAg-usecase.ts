@@ -1,18 +1,41 @@
 import { DataSource, In } from 'typeorm';
 import { AgTask } from './../database/models/agTask';
 import { UserTask } from './../database/models/user-task';
-import { TaskCreateRequest, TaskSelectOneRequest, TaskUpdateRequest } from '../Validators/taskValidator';
 import { ListItemRequest } from '../Validators/commonValidator';
 import { CustomError } from '../common/error/customError';
 import { UserAgTask } from '../database/models/user-agTask';
 import { UserResponse } from '../Validators/userValidator';
 import { User } from '../database/models/user';
+import { AgTaskCreateRequest, agTaskSelectOneRequest, AgTaskUpdateRequest } from '../Validators/agTaskValidator';
+import { Ag } from '../database/models/ag';
 export class TaskAgUseCase {
     constructor(private readonly db:DataSource) {};
 
-    async createTask(task: TaskCreateRequest): Promise<AgTask> {
+    async createTask(task: AgTaskCreateRequest): Promise<AgTask> {
         const taskRepository = this.db.getRepository(AgTask);
-        const newTask = taskRepository.create(task);
+        const { dueDate , agId ,title , description, priority} = task;
+        let taskParent = null;
+        if(priority){
+            taskParent = await taskRepository.findOneBy({id: priority});
+            if (!taskParent) {
+                throw new CustomError(404,'Task not found');
+            }
+            if (taskParent.agId != task.agId){
+                throw new CustomError(400,'Task priority must be in the same event' );
+            }
+        }
+        const agRepository = this.db.getRepository(Ag);
+        const ag = await agRepository.findOneBy({id: agId});
+        if (!ag) {
+            throw new CustomError(404, 'Ag not found');
+        }
+        if (dueDate > ag.ag_date){
+            throw new CustomError(400, 'Task due date must be before the event date');
+        }
+        if (dueDate < new Date()){
+            throw new CustomError(400, 'Task due date must be in the future');
+        }
+        const newTask = taskRepository.create({title, description, max_end_date: dueDate, priority: taskParent, ag});
         await taskRepository.save(newTask);
         return newTask;
     }
@@ -43,7 +66,7 @@ export class TaskAgUseCase {
         await taskRepository.save(task);
     }
 
-    async updateTask(taskId: number,task: TaskUpdateRequest): Promise<AgTask> {
+    async updateTask(taskId: number,task: AgTaskUpdateRequest): Promise<AgTask> {
         const taskRepository = this.db.getRepository(AgTask);
         const taskToUpdate = await taskRepository.findOneBy({id: taskId});
         if (!taskToUpdate) {
@@ -59,17 +82,31 @@ export class TaskAgUseCase {
             taskToUpdate.max_end_date = task.dueDate;
         }
         if(task.priority){
-            const taskParent = await taskRepository.findOneBy({id: task.priority});
-            if (!taskParent) {
-                throw new CustomError(404, 'Task not found');
+            if(task.priority < 0){
+                //remove priority
+                taskToUpdate.priority = null;
+                taskToUpdate.priorityId = null;
+            }else{
+                const taskParent = await taskRepository.findOneBy({id: task.priority});
+                if (!taskParent) {
+                    throw new CustomError(404, 'Task not found');
+                }
+                if (taskParent.agId != taskToUpdate.agId){
+                    throw new CustomError(400, 'Task priority must be in the same event');
+                }
+                if (taskParent.id == taskToUpdate.id){
+                    throw new CustomError(400, 'Task priority must be different from the task');
+                }
+                taskToUpdate.priority = taskParent;
+                taskToUpdate.priorityId = task.priority;
             }
-            taskToUpdate.task = [taskParent];
+            // taskToUpdate.task = [taskParent];
         }
         await taskRepository.save(taskToUpdate);
         return taskToUpdate;
     }
 
-    async selectOneTask(taskId: TaskSelectOneRequest): Promise<AgTask> {
+    async selectOneTask(taskId: agTaskSelectOneRequest): Promise<AgTask> {
         const taskRepository = this.db.getRepository(AgTask);
         const task = await taskRepository.findOneBy({id: taskId.taskId});
         if (!task) {

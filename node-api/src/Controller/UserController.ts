@@ -17,10 +17,10 @@ import BanTicketController from './BanTicketController';
 
 const router = Router();
 router.get('/',
-    validatorMiddleware(ListUserValidation, 'body'),
+    validatorMiddleware(ListUserValidation, 'params'),
     authMiddleware,
     async (req: Request, res: Response): Promise<void> => {
-        const listUserRequest = req.body;
+        const listUserRequest = req.params;
         try {
             const UserUsecase = new UserUseCase(db);
             const listUser = await UserUsecase.listUsers({ ...listUserRequest });
