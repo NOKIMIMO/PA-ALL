@@ -24,7 +24,7 @@ export class User {
     password: string
 
     @Column({
-        default: 'user'
+        default: 'USER'
     })
     role: string
     @Column({
