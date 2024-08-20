@@ -46,7 +46,7 @@ export class UserUseCase {
 
         console.log(filter)
         if (filter.role) {
-            query.andWhere("user.role = :role", { role: filter.role.toUpperCase() });
+            query.andWhere("user.role = :role", { role: filter.role });
         }
         if (filter.limit) {
             query.limit(filter.limit);
