@@ -9,7 +9,7 @@ import { validatorMiddleware } from '../common/middleware/validator-middleware';
 import { JwtPayload } from 'jsonwebtoken';
 import { CustomError } from '../common/error/customError';
 import { TaskAgUseCase } from '../domain/taskAg-usecase';
-import { agTaskCreateValidation, agTaskSelectOneValidation, agTaskUpdateValidation } from '../Validators/agTaskValidator';
+import { agTaskAssignValidation, agTaskCreateValidation, agTaskSelectOneValidation, agTaskUpdateValidation } from '../Validators/agTaskValidator';
 import { selectAgValidation } from '../Validators/agValidator';
 
 const router = Router();
@@ -162,11 +162,11 @@ router.get('/:taskId/assigned',
     authMiddleware,
     validatorMiddleware(agTaskSelectOneValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
-        const taskId = parseInt(req.params.id);
+        const taskId = parseInt(req.params.taskId);
         try {
             const taskUseCase = new TaskAgUseCase(db);
             const users = await taskUseCase.listUserOfTask(taskId);
-            res.json({ data: users }).status(200);
+            res.json({ users: users }).status(200);
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code);
@@ -250,7 +250,7 @@ router.delete('/:taskId',
 
 router.get('/:taskId/assign/:userId',
     authMiddleware,
-    validatorMiddleware(agTaskSelectOneValidation, 'params'),
+    validatorMiddleware(agTaskAssignValidation, 'params'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
         const userId = parseInt(req.params.userId);

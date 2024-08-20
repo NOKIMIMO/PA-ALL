@@ -134,12 +134,12 @@ export class TaskAgUseCase {
         if (!task) {
             throw new CustomError(404, 'Task not found');
         }
-        const taskUserRepository = this.db.getRepository(UserTask);
-        const userTask = taskUserRepository.findBy({userId, taskId});
+        const taskUserRepository = this.db.getRepository(UserAgTask);
+        const userTask = taskUserRepository.findBy({userId, agTaskId: taskId});
         if ((await userTask).length > 0) {
             throw new Error('Task already assigned to user');
         }
-        const newUserTask = taskUserRepository.create({userId, taskId});
+        const newUserTask = taskUserRepository.create({userId, agTaskId: taskId});
         await taskUserRepository.save(newUserTask);
     }
 
@@ -193,30 +193,31 @@ export class TaskAgUseCase {
     }
 
     async listUserOfTask(taskId: number): Promise<UserResponse[]> {
-        const taskUserRepository = this.db.getRepository(UserAgTask);
-        const userTasks = await taskUserRepository.findBy({agTaskId: taskId});
-        if (userTasks.length === 0) {
+    
+        const agTaskUserRepository = this.db.getRepository(UserAgTask);
+        const taskUsers = await agTaskUserRepository.findBy({agTaskId: taskId});
+        if (!taskUsers) {
+            throw new CustomError(404, 'Task not found');
+        }
+        if (taskUsers.length === 0) {
             return [];
         }
-        // then get the user
+        const userIds = taskUsers.map(taskUser => taskUser.userId);
         const userRepository = this.db.getRepository(User);
-        const userIds = userTasks.map(userTask => userTask.userId);
-        //build query
         const users = await userRepository.findBy({id: In(userIds)});
 
-        // Map to UserResponse while excluding the password field
-        const userResponse = users.map(user => ({
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            lastname: user.lastname,
-            firstname: user.firstname,
-            active: user.active,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt
-        }));
-    
-        return userResponse;
+        const usersResponse = users.map(user => (
+            {id: user.id,
+                email: user.email,
+                role: user.role,
+                lastname: user.lastname,
+                firstname: user.firstname,
+                active: user.active,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt}
+            ));
+
+        return usersResponse;
     }
 
     async listTaskOfUser(userId: number): Promise<AgTask[]> {
