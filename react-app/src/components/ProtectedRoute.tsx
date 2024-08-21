@@ -10,7 +10,6 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, loading } = useUser();
-    console.log(user,loading, requiredRole);
     if (loading) {
       // While loading, you might want to show a spinner or a blank screen
       return <div>Loading...</div>;
