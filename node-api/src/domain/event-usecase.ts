@@ -177,7 +177,9 @@ export default class EventUseCase {
         if(data.event_date < today){
             throw new CustomError(401,'Event date must be in the future')
         }
-    
+        if(data.max_participant && data.max_participant <5){
+            throw new CustomError(401,'Max participant must be greater than 5 if specified')
+        }
         const newEvent = eventRepository.create({ ...data, user: { id: userid } });
         const newEventReturn = await eventRepository.save(newEvent);
         const eventMannagerRepository = this.db.getRepository(EventManager);
@@ -220,6 +222,12 @@ export default class EventUseCase {
         }
         if (data.data_access_type) {
             eventFind.data_access_type = data.data_access_type
+        }
+        if (data.max_participant) {
+            if (data.max_participant < 5) {
+                throw new CustomError(401,'Max participant must be greater than 5 if specified')
+            }
+            eventFind.max_participant = data.max_participant
         }
         const updatedEvent = await repo.save(eventFind)
         return updatedEvent

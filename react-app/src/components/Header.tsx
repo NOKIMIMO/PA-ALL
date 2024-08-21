@@ -4,16 +4,16 @@ import UserBtn from './UserBtn';
 import Burger from './Burger';
 import { useUser } from '../context/UserContext';
 import ThemeSwitcher from './ThemeSwitcher';
+import { user_access_type } from 'src/commons/user_access_type';
 
 
 export default function Header() {
     const { user } = useUser();
-    const isAdmin = user?.role.toLowerCase() === 'admin' || user?.role.toLowerCase() === 'super_admin';
-    const isLogged = user?.role.toLowerCase() === 'user' || isAdmin;
+
     return (
         <div className="navbar bg-neutral fixed top-0 left-0 w-full z-50">
             <div className="navbar-start">
-                <Burger isAdmin={isAdmin} isLogged={isLogged}/>
+                <Burger role={user?.role as user_access_type}/>
                 <ThemeSwitcher />
             </div>
             <div className="navbar-center">

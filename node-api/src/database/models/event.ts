@@ -37,6 +37,9 @@ export class Event {
     @Column({ default: true })
     active: boolean;
 
+    @Column({nullable: true})
+    max_participant: number;
+
     @OneToMany(()=> EventManager, eventManager => eventManager.event, {cascade: true})
     eventManager: EventManager[];
 
@@ -49,7 +52,7 @@ export class Event {
     constructor(id: number, title: string, userId: number,
          user: User, description: string, data_access_type: string,
           event_date: Date, location: string, createdAt: Date, updatedAt: Date,
-           active: boolean, tasks: Task[], eventManager: EventManager[]) {
+           active: boolean, tasks: Task[], eventManager: EventManager[], max_participant: number) {
         this.id = id;
         this.title = title;
         this.user = user;
@@ -63,5 +66,6 @@ export class Event {
         this.active = active;
         this.tasks = tasks;
         this.eventManager = eventManager;
+        this.max_participant = max_participant;
     }
 }

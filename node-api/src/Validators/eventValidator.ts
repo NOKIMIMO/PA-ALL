@@ -21,6 +21,7 @@ export interface createEventValidationRequest  {
     event_date: Date // format date with time zone (%yyyy-%mm-%dd-T%HH:%MM:%SS.000Z%)
     location: string //format {rue}, {ville}, {code_postal}
     usersId?: number[]
+    max_participant?: number
 }
 
 export const createEventValidation = Joi.object<createEventValidationRequest>({
@@ -30,6 +31,7 @@ export const createEventValidation = Joi.object<createEventValidationRequest>({
     event_date: Joi.date().required(),
     location: Joi.string().required(),
     usersId: Joi.array().items(Joi.number()).optional(),
+    max_participant : Joi.number().optional()
 
 }).options({ abortEarly: false });
 
@@ -40,6 +42,7 @@ export interface updateEventRequest{
     data_access_type?: string
     event_date?: Date
     location?: string
+    max_participant?: number
 }
 
 export const updateEventValidation = Joi.object<updateEventRequest>({
@@ -48,7 +51,8 @@ export const updateEventValidation = Joi.object<updateEventRequest>({
     description: Joi.string().optional(),
     data_access_type: Joi.string().optional(),
     event_date: Joi.date().optional(),
-    location: Joi.string().optional()
+    location: Joi.string().optional(),
+    max_participant: Joi.number().optional()
 })
 
 export interface deleteEventRequest{
