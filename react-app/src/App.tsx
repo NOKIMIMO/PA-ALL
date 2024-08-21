@@ -48,15 +48,15 @@ function App() {
 
 function AppWrapper() {
   return (
-    <BrowserRouter>
-      <UserProvider>
+    <UserProvider>
+      <BrowserRouter>
         <ThemeProvider>
           <ToastManager>
             <App />
           </ToastManager>
         </ThemeProvider>
-      </UserProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </UserProvider>
   );
 }
 
