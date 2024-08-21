@@ -18,7 +18,7 @@ router.post('/',
             const AgUsecase = new AgUseCase(db);
             const ag = await AgUsecase.createAg({ ...createAgRequest }, req.user?.userId!);
             res.status(201);
-            res.json({ ag });
+            res.json({ ag : ag });
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code).send({ error: error.message });
@@ -37,7 +37,7 @@ router.get('/',
             const AgUsecase = new AgUseCase(db);
             const listAgs = await AgUsecase.listAgs({ ...listItemRequest });
             res.status(200);
-            res.json(listAgs);
+            res.json({data : listAgs});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -57,7 +57,7 @@ router.get('/managed',
             const AgUsecase = new AgUseCase(db);
             const listAgs = await AgUsecase.listAgsOfUser({ ...listItemRequest }, req.user?.userId!);
             res.status(200);
-            res.json(listAgs);
+            res.json({data : listAgs});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -79,7 +79,7 @@ router.get('/user/:itemId/managed',
             const AgUsecase = new AgUseCase(db);
             const listAgs = await AgUsecase.listAgsOfUser({ ...listItemRequest }, userId);
             res.status(200);
-            res.json(listAgs);
+            res.json({data : listAgs});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -101,7 +101,7 @@ router.get('/user/:itemId/assigned',
             const AgUsecase = new AgUseCase(db);
             const listAgs = await AgUsecase.listAgsWhereTaskAssigned(userId);
             res.status(200);
-            res.json(listAgs);
+            res.json({data : listAgs});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -120,7 +120,7 @@ router.get('/self/assigned',
             const AgUsecase = new AgUseCase(db);
             const listAgs = await AgUsecase.listAgsWhereTaskAssigned(req.user?.userId!);
             res.status(200);
-            res.json(listAgs);
+            res.json({data : listAgs});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -139,7 +139,7 @@ router.get('/joined',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.listAgsWhereUserJoined(req.user?.userId!);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -161,7 +161,7 @@ router.get('/:agId',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.getAgById(agId);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code).send({ error: error.message });
@@ -181,7 +181,7 @@ router.delete('/:agId',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.deleteAg(agId, req.user?.userId!);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -204,7 +204,7 @@ router.patch('/:agId',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.updateAg({ ...updateAgRequest }, agId, req.user?.userId!);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -225,7 +225,7 @@ router.get('/:agId/manager',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.getAgMannager(agId);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code).send({ error: error.message });
@@ -247,7 +247,7 @@ router.post('/:agId/answer',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.answerAg(agId, req.user?.userId!);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -269,7 +269,7 @@ router.get('/:agId/join',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.addUserToAg(agId, [req.user?.userId!]);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -293,7 +293,7 @@ router.post('/:agId/add',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.addUserToAg(agId, userIds);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -315,7 +315,7 @@ router.get('/:agId/leave',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.removeUserToAg(agId, [req.user?.userId!]);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -338,7 +338,7 @@ router.post('/:agId/remove',
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.removeUserToAg(agId, userIds);
             res.status(200);
-            res.json(ag);
+            res.json({message :ag});
         }
         catch (error) {
             if (error instanceof CustomError) {
