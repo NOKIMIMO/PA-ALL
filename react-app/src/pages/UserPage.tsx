@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import '../css/reactCalendar.css';
 import { useUser } from '../context/UserContext';
 import UserService from "../services/UserService";
 import { EventService } from "../services/EventService";
@@ -145,12 +146,12 @@ export default function UserPage() {
                                 </p>
                                 {userData.license.active && (
                                     <button
-                                    className="btn btn-success mt-4 "
-                                    onClick={() => navigate('/licenses')}
-                                    disabled
-                                >
-                                    You already have an active license
-                                </button>
+                                        className="btn btn-success mt-4 "
+                                        onClick={() => navigate('/licenses')}
+                                        disabled
+                                    >
+                                        You already have an active license
+                                    </button>
                                 )}
                                 {!userData.license.active && (
                                     <button
@@ -171,6 +172,7 @@ export default function UserPage() {
                     <div className="card-body">
                         <h2 className="card-title">User Events</h2>
                         <Calendar
+                            className="react-calendar"
                             tileContent={({ date, view }) => {
                                 if (view === 'month') {
                                     const currentDate = date.toDateString();
@@ -180,6 +182,16 @@ export default function UserPage() {
                                     }
                                 }
                                 return null;
+                            }}
+                            tileClassName={({ date, view }) => {
+                                if (view === 'month') {
+                                    const currentDate = date.toDateString();
+                                    const event = eventDates.find(event => event.date === currentDate);
+                                    if (event) {
+                                        return 'bg-blue-100 text-blue-600 rounded-lg';
+                                    }
+                                }
+                                return 'hover:bg-gray-200 rounded-lg';
                             }}
                         />
                     </div>

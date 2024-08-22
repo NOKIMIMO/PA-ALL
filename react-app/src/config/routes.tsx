@@ -16,6 +16,9 @@ import VoteDetailPage from '../pages/VoteDetailPage';
 import DonationPage from '../pages/DonationPage';
 import LicensePage from '../pages/LicensePage';
 import PaymentRedirectPage from '../pages/PaymentRedirectPage';
+import ProtectedRoute from '../components/ProtectedRoute';
+import { user_access_type } from '../commons/user_access_type';
+import NotAuthorizedPage from '../pages/403';
 
 const routes: IRoute[] = [
     {
@@ -57,27 +60,42 @@ const routes: IRoute[] = [
         ]
     },
     {
-        path:'/vault',
+        path: '/vault',
         name: 'Vault Page',
-        component: VaultPage,
+        component: () => (
+            <ProtectedRoute requiredRole={[user_access_type.LICENSED, user_access_type.ADMIN, user_access_type.EMPLOYEE, user_access_type.SUPER_ADMIN]}>
+                <VaultPage />
+            </ProtectedRoute>
+        ),
         exact: true
     },
     {
         path: '/eventList',
         name: 'Event List',
-        component: EventListPage,
+        component: () => (
+            <ProtectedRoute requiredRole={[user_access_type.LICENSED, user_access_type.ADMIN, user_access_type.EMPLOYEE, user_access_type.SUPER_ADMIN]}>
+                <EventListPage />
+            </ProtectedRoute>
+        ),
         exact: true
     },
     {
         path: '/event/eventPage/:eventId',
         name: 'Event Page',
-        component: EventPage,
+        component: () => (
+            <ProtectedRoute requiredRole={[user_access_type.LICENSED, user_access_type.ADMIN, user_access_type.EMPLOYEE, user_access_type.SUPER_ADMIN]}>
+                <EventPage />
+            </ProtectedRoute>
+        ),
         exact: true
     },
     {
         path: '/postList',
         name: 'Post List',
-        component: PostListPage,
+        component:() =>
+            (<ProtectedRoute>
+                <PostListPage />
+            </ProtectedRoute>),
         exact: true
     },
     {
@@ -89,19 +107,31 @@ const routes: IRoute[] = [
     {
         path: '/voteList',
         name: 'Vote List',
-        component: VoteListPage,
+        component: () => (
+            <ProtectedRoute requiredRole={[user_access_type.LICENSED, user_access_type.ADMIN, user_access_type.EMPLOYEE, user_access_type.SUPER_ADMIN]}>
+                <VoteListPage />
+            </ProtectedRoute>
+        ),
         exact: true
     },
     {
         path: '/votes/:voteId',
         name: 'Vote Page',
-        component: VoteDetailPage,
+        component: () => (
+            <ProtectedRoute requiredRole={[user_access_type.LICENSED, user_access_type.ADMIN, user_access_type.EMPLOYEE, user_access_type.SUPER_ADMIN]}>
+                <VoteDetailPage />
+            </ProtectedRoute>
+        ),
         exact: true
     },
     {
         path: '/donate',
         name: 'Donate',
-        component: DonationPage,
+        component: () => (
+            <ProtectedRoute requiredRole={[user_access_type.LICENSED, user_access_type.ADMIN, user_access_type.EMPLOYEE, user_access_type.SUPER_ADMIN]}>
+                <DonationPage />
+            </ProtectedRoute>
+        ),
         exact: true
     },
     {
@@ -114,6 +144,12 @@ const routes: IRoute[] = [
         path: '/payment-redirect',
         name: 'Stripe Redirect',
         component: PaymentRedirectPage,
+        exact: true
+    },
+    {
+        path: '/not-authorized',
+        name: 'Not Authorized',
+        component: NotAuthorizedPage,
         exact: true
     },
     {
