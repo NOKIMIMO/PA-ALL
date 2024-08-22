@@ -106,7 +106,7 @@ export default function UserPage() {
             id: event.id,
         };
     });
-
+    console.log(userData)
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-4">User Page</h1>
@@ -141,7 +141,7 @@ export default function UserPage() {
                                     Current Tier: {userData.license.active ? 'Member' : 'Free'}
                                 </p>
                                 <p>
-                                    Expiry Date: {new Date(userData.license.expirationDate).toLocaleString()}
+                                    Expiry Date: {userData.license.expirationDate ? new Date(userData.license.expirationDate).toLocaleString() : "Jusqu'a ce que vous nous joignez ;)"}
                                 </p>
                                 {userData.license.active && (
                                     <button
@@ -152,7 +152,7 @@ export default function UserPage() {
                                     You already have an active license
                                 </button>
                                 )}
-                                {!userData.license && (
+                                {!userData.license.active && (
                                     <button
                                         className="btn btn-primary mt-4"
                                         onClick={() => navigate('/licenses')}
