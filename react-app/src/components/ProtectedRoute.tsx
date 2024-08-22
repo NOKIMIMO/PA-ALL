@@ -1,8 +1,10 @@
 import { Navigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { user_access_type } from '../commons/user_access_type';
+import { FaCat } from 'react-icons/fa';  // Import a cat icon (using a placeholder)
+import { GiWool  } from 'react-icons/gi';  // Import a wool ball icon (using a placeholder)
 
-//create Props
+// Create Props
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: user_access_type[];
@@ -10,10 +12,18 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, loading } = useUser();
-    if (loading) {
-      // While loading, you might want to show a spinner or a blank screen
-      return <div>Loading...</div>;
-    }
+
+  if (loading) {
+    // Show a playful loading animation
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="relative flex items-center">
+          <FaCat className="text-gray-800 text-6xl animate-cat-chase" />
+          <GiWool  className="text-pink-500 text-6xl ml-12 animate-spin-wool" />
+        </div>
+      </div>
+    );
+  }
 
   if (!user || !user.active) {
     // User is not authenticated, redirect to login
@@ -25,7 +35,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <Navigate to="/not-authorized" replace />;
   }
 
-  return <>{children}</>;  // Render the protected component
+  return <>{children}</>; // Render the protected component
 };
 
 export default ProtectedRoute;
