@@ -10,7 +10,6 @@ import BuyLicenseCard from '../components/LicenseBuy';
 export default function LicensePage() {
     const navigate = useNavigate();
     const { addToast } = useToast();
-    const { setUser, fetchUserData } = useUser();
     return (
         <BuyLicenseCard/>
     )
