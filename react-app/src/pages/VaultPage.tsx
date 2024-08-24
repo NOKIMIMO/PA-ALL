@@ -213,58 +213,60 @@ export default function VaultPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-r from-blue-50 to-indigo-100 flex flex-col">
-          <div className="grid grid-cols-12 gap-6 p-6">
-            {/* Sidebar */}
-            <div className="col-span-3 bg-base-300 p-6 rounded-xl shadow-2xl">
-              <ul className="menu menu-sm rounded-xl">
-                {folders.map((folder, index) => (
-                  <li key={folder.id}>
-                    <Folder
-                      id={folder.id}
-                      name={folder.name}
-                      files={folder.files}
-                      isOpen={true}
-                      onToggle={() => toggleFolder(index)}
-                      onFileClick={handleFileClick}
-                      onAddFile={handleAddFile}
-                      onDeleteFile={handleDeleteFolder}
-                      onRenameFile={handleRenameFile}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="flex-grow flex flex-col justify-between p-6">
+            <div className="grid grid-cols-12 gap-6 flex-grow" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+              {/* Sidebar */}
+              <div className="col-span-3 bg-base-300 p-6 rounded-xl shadow-2xl flex flex-col justify-between">
+                <ul className="menu menu-sm rounded-xl flex-grow overflow-y-auto">
+                  {folders.map((folder, index) => (
+                    <li key={folder.id}>
+                      <Folder
+                        id={folder.id}
+                        name={folder.name}
+                        files={folder.files}
+                        isOpen={true}
+                        onToggle={() => toggleFolder(index)}
+                        onFileClick={handleFileClick}
+                        onAddFile={handleAddFile}
+                        onDeleteFile={handleDeleteFolder}
+                        onRenameFile={handleRenameFile}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
       
-            {/* Main Content */}
-            <div className="col-span-9 bg-white p-8 rounded-xl shadow-2xl">
-              <div className="grid grid-cols-9 gap-8 h-full">
-                {/* File Preview */}
-                <div className="col-span-8 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-300 rounded-xl p-8 shadow-lg">
-                  {showPreview && selectedFile ? (
-                    <div className="flex flex-col h-full">
-                      <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900">{selectedFile.name}</h1>
-                        <HiX className="text-gray-800 cursor-pointer hover:text-gray-900 transition-colors duration-300" onClick={handleClearSelection} />
-                      </div>
-                      <PreviewFile selectedFile={selectedFile} />
-                      {["pdf", "plain", "png", "jpg"].indexOf(selectedFile.type) === -1 && (
-                        <div className="flex items-center justify-center w-full h-full">
-                          <HiQuestionMarkCircle className="text-8xl text-gray-600" />
+              {/* Main Content */}
+              <div className="col-span-9 bg-white p-8 rounded-xl shadow-2xl flex flex-col justify-between">
+                <div className="grid grid-cols-9 gap-8 flex-grow overflow-y-auto">
+                  {/* File Preview */}
+                  <div className="col-span-8 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-300 rounded-xl p-8 shadow-lg flex flex-col justify-between">
+                    {showPreview && selectedFile ? (
+                      <div className="flex flex-col h-full">
+                        <div className="flex justify-between items-center mb-6">
+                          <h1 className="text-3xl font-bold text-gray-900">{selectedFile.name}</h1>
+                          <HiX className="text-gray-800 cursor-pointer hover:text-gray-900 transition-colors duration-300" onClick={handleClearSelection} />
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <p className="text-gray-700 text-lg">Select a file to preview</p>
-                    </div>
-                  )}
-                </div>
+                        <PreviewFile selectedFile={selectedFile} />
+                        {["pdf", "plain", "png", "jpg"].indexOf(selectedFile.type) === -1 && (
+                          <div className="flex items-center justify-center w-full h-full">
+                            <HiQuestionMarkCircle className="text-8xl text-gray-600" />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-gray-700 text-lg">Select a file to preview</p>
+                      </div>
+                    )}
+                  </div>
       
-                {/* Action Buttons */}
-                <div className="col-span-1 flex flex-col justify-between">
-                  <DLButton selectedFile={selectedFile} handleFileDownload={handleFileDownload} />
-                  <DeleteButton selectedFile={selectedFile} handleDeleteFolder={handleDeleteFolder} />
-                  <CryptButton selectedFile={selectedFile} handleCryptFile={handleCryptFile} />
+                  {/* Action Buttons */}
+                  <div className="col-span-1 flex flex-col justify-between">
+                    <DLButton selectedFile={selectedFile} handleFileDownload={handleFileDownload} />
+                    <DeleteButton selectedFile={selectedFile} handleDeleteFolder={handleDeleteFolder} />
+                    <CryptButton selectedFile={selectedFile} handleCryptFile={handleCryptFile} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -286,4 +288,5 @@ export default function VaultPage() {
           )}
         </div>
       );
+      
 }
