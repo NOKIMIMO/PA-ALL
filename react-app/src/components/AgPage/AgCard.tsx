@@ -6,19 +6,11 @@ interface CardProps {
     showActions?: boolean | null;
     onEdit?: () => void;
     onDelete?: () => void;
-    isAG?: boolean;
 }
 
-export function Card({ title, content, subtext, pageLink, showActions, onEdit, onDelete, isAG}: CardProps) {
+export function Card({ title, content, subtext, pageLink, showActions, onEdit, onDelete}: CardProps) {
     return (
         <div className="relative max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow">
-            {isAG && (
-                <div className="absolute top-2 right-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6 text-yellow-500">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
-                </div>
-            )}
             <a href="#">
                 <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">{title}</h5>
             </a>

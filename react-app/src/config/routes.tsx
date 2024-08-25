@@ -18,6 +18,7 @@ import PaymentRedirectPage from '../pages/PaymentRedirectPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { user_access_type } from '../commons/user_access_type';
 import NotAuthorizedPage from '../pages/403';
+import AGListPage from '../pages/AGListPage';
 
 const routes: IRoute[] = [
     {
@@ -90,6 +91,39 @@ const routes: IRoute[] = [
         ),
         exact: true,
         keywords: { vault: 5, secure: 4, storage: 3 },
+    },
+    {
+        path: '/agList',
+        name: 'Ag List',
+        component: () => (
+            <ProtectedRoute
+                requiredRole={[
+                    user_access_type.ADMIN,
+                    user_access_type.EMPLOYEE,
+                    user_access_type.SUPER_ADMIN,
+                ]}
+            >
+                <AGListPage />
+            </ProtectedRoute>
+        ),
+        exact: true,
+        keywords: { ag: 5, list: 4, meeting: 3 },
+    },
+    {
+        path: '/ag/agPage/:agId',
+        name: 'AG Page',
+        component: () => (
+            <ProtectedRoute
+                requiredRole={[
+                    user_access_type.ADMIN,
+                    user_access_type.EMPLOYEE,
+                    user_access_type.SUPER_ADMIN,
+                ]}
+            >
+                <EventPage />
+            </ProtectedRoute>
+        ),
+        exact: true,
     },
     {
         path: '/eventList',

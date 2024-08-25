@@ -1,5 +1,6 @@
 import * as Joi from "joi";
 import { Event } from "../database/models/event";
+import { event_category_animal, event_category_event } from "../common/enum/event-category";
 
 export interface ListEventResponse {
     event: Event[]
@@ -22,6 +23,8 @@ export interface createEventValidationRequest  {
     location: string //format {rue}, {ville}, {code_postal}
     usersId?: number[]
     max_participant?: number
+    category_event?: event_category_event
+    category_animal?: event_category_animal
 }
 
 export const createEventValidation = Joi.object<createEventValidationRequest>({
@@ -31,7 +34,9 @@ export const createEventValidation = Joi.object<createEventValidationRequest>({
     event_date: Joi.date().required(),
     location: Joi.string().required(),
     usersId: Joi.array().items(Joi.number()).optional(),
-    max_participant : Joi.number().optional()
+    max_participant : Joi.number().optional(),
+    category_event : Joi.string().valid(...Object.values(event_category_event)).optional(),
+    category_animal : Joi.string().valid(...Object.values(event_category_animal)).optional()
 
 }).options({ abortEarly: false });
 
@@ -43,6 +48,8 @@ export interface updateEventRequest{
     event_date?: Date
     location?: string
     max_participant?: number
+    category_event?: event_category_event
+    category_animal?: event_category_animal
 }
 
 export const updateEventValidation = Joi.object<updateEventRequest>({
@@ -52,7 +59,9 @@ export const updateEventValidation = Joi.object<updateEventRequest>({
     data_access_type: Joi.string().optional(),
     event_date: Joi.date().optional(),
     location: Joi.string().optional(),
-    max_participant: Joi.number().optional()
+    max_participant: Joi.number().optional(),
+    category_event : Joi.string().valid(...Object.values(event_category_event)).optional(),
+    category_animal : Joi.string().valid(...Object.values(event_category_animal)).optional()
 })
 
 export interface deleteEventRequest{

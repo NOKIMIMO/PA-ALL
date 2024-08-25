@@ -1,0 +1,9 @@
+export enum ag_category {
+    GENERAL = 'GENERAL',
+    VOTING = 'VOTING',
+    BUDGETING = 'BUDGETING',
+    EVENT_PLANNING = 'EVENT_PLANNING',
+    PETITION = 'PETITION',
+    SURVEY = 'SURVEY',
+    BAN_APPEAL = 'BAN_APPEAL',
+}

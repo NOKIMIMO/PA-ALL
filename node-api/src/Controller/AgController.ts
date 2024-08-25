@@ -37,7 +37,7 @@ router.get('/',
             const AgUsecase = new AgUseCase(db);
             const listAgs = await AgUsecase.listAgs({ ...listItemRequest });
             res.status(200);
-            res.json({data : listAgs});
+            res.json(listAgs);
         }
         catch (error) {
             if (error instanceof CustomError) {
