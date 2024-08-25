@@ -2,17 +2,20 @@ import { Router, Request, Response } from 'express';
 import { db } from '../database/db';
 import { VoteUseCase } from '../domain/vote-usecase';
 import { validatorMiddleware } from '../common/middleware/validator-middleware';
-import { createVoteValidation, selectVoteValidation, voteForOptionValidation } from '../Validators/voteValidator';
+import { createVoteValidation, listVotesValidation, selectVoteValidation, voteForOptionValidation } from '../Validators/voteValidator';
 import { authMiddleware } from '../common/middleware/auth-middleware';
 import { CustomError } from '../common/error/customError';
 
 const router = Router();
 
 router.get('/',
+    authMiddleware,
+    validatorMiddleware(listVotesValidation, 'query'),
     async (req: Request, res: Response) => {
         const voteUseCase = new VoteUseCase(db);
+        const listItemRequest = req.query;
         try {
-            const votes = await voteUseCase.listVotes();
+            const votes = await voteUseCase.listVotes({...listItemRequest});
             res.status(200).json(votes);
         } catch (error) {
             console.log(error);

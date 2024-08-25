@@ -18,6 +18,13 @@ interface UpdateVoteBody {
     options: VoteOption[];
 }
 
+interface ListVotesRequest {
+    page?: number;
+    limit?: number;
+    start_date?: Date;
+    end_date?: Date;
+}
+
 interface VoteOption {
     id: number;
     name: string;
@@ -25,7 +32,7 @@ interface VoteOption {
 }
 
 export interface IVoteService {
-    getVotes(): Promise<any>;
+    getVotes(request: ListVotesRequest): Promise<any>;
     getVoteById(voteId: number): Promise<any>;
     voteForOption(voteId: number, optionId: number): Promise<void>;
     createVote(body: CreateVoteBody): Promise<any>;
@@ -35,11 +42,25 @@ export interface IVoteService {
 }
 
 export class VoteService implements IVoteService {
-    async getVotes(): Promise<any> {
-        const response = await fetch('/api/v1/votes', {
+    async getVotes(request : ListVotesRequest): Promise<any> {
+        const url = new URL('/api/v1/votes', window.location.origin);
+        if (request.page) {
+            url.searchParams.append('page', request.page.toString());
+        }
+        if (request.limit) {
+            url.searchParams.append('limit', request.limit.toString());
+        }
+        if (request.start_date) {
+            url.searchParams.append('start_date', request.start_date.toISOString());
+        }
+        if (request.end_date) {
+            url.searchParams.append('end_date', request.end_date.toISOString());
+        }
+        const response = await fetch(url.toString(), {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
         const data = await response.json();
@@ -47,39 +68,39 @@ export class VoteService implements IVoteService {
             throw new CustomError(response.status, data.error || 'Something went wrong');
         }
 
-        const now = new Date();
-        const votesToCreate = [];
-        const existingSecondRoundVotes = await this.getExistingSecondRoundVotes();
+        // const now = new Date();
+        // const votesToCreate = [];
+        // const existingSecondRoundVotes = await this.getExistingSecondRoundVotes();
 
-        for (const vote of data) {
-            const endDate = new Date(vote.endDate);
-            if (vote.secondRoundEnabled && endDate < now) {
-                const totalVotes = vote.options.reduce((acc: number, option: VoteOption) => acc + option.voteCount, 0);
-                const topTwoOptions = vote.options
-                    .sort((a: VoteOption, b: VoteOption) => b.voteCount - a.voteCount)
-                    .slice(0, 2);
-                const hasMajority = topTwoOptions[0].voteCount > totalVotes / 2;
+        // for (const vote of data) {
+        //     const endDate = new Date(vote.endDate);
+        //     if (vote.secondRoundEnabled && endDate < now) {
+        //         const totalVotes = vote.options.reduce((acc: number, option: VoteOption) => acc + option.voteCount, 0);
+        //         const topTwoOptions = vote.options
+        //             .sort((a: VoteOption, b: VoteOption) => b.voteCount - a.voteCount)
+        //             .slice(0, 2);
+        //         const hasMajority = topTwoOptions[0].voteCount > totalVotes / 2;
 
-                if (!hasMajority && topTwoOptions.length > 1) {
-                    const secondRoundTitle = `${vote.title} (second tour)`;
+        //         if (!hasMajority && topTwoOptions.length > 1) {
+        //             const secondRoundTitle = `${vote.title} (second tour)`;
                     
-                    // Vérifiez si un vote de second tour avec ce titre existe déjà
-                    if (!existingSecondRoundVotes.some((existingVote: any) => existingVote.title === secondRoundTitle)) {
-                        votesToCreate.push({
-                            title: secondRoundTitle,
-                            description: vote.description,
-                            options: topTwoOptions.map((option: VoteOption) => ({ name: option.name })),
-                            endDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
-                            secondRoundEnabled: false
-                        });
-                    }
-                }
-            }
-        }
+        //             Vérifiez si un vote de second tour avec ce titre existe déjà
+        //             if (!existingSecondRoundVotes.some((existingVote: any) => existingVote.title === secondRoundTitle)) {
+        //                 votesToCreate.push({
+        //                     title: secondRoundTitle,
+        //                     description: vote.description,
+        //                     options: topTwoOptions.map((option: VoteOption) => ({ name: option.name })),
+        //                     endDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+        //                     secondRoundEnabled: false
+        //                 });
+        //             }
+        //         }
+        //     }
+        // }
 
-        for (const newVote of votesToCreate) {
-            await this.createVote(newVote);
-        }
+        // for (const newVote of votesToCreate) {
+        //     await this.createVote(newVote);
+        // }
 
         return data;
     }

@@ -11,6 +11,7 @@ import { AgTask } from "../database/models/agTask";
 import { UserAgTask } from "../database/models/user-agTask";
 import { UserResponse } from "../Validators/userValidator";
 import { UsersAgs } from "../database/models/users-ag";
+import { Vote } from "../database/models/vote";
 
 
 export default class AgUseCase {
@@ -94,6 +95,13 @@ export default class AgUseCase {
 
     async createAg(data: createAgValidationRequest, userid: number): Promise<Ag> {
         const agRepository = this.db.getRepository(Ag);
+        if (data.vote_id) {
+            const voteRepo = this.db.getRepository(Vote)
+            const vote = await voteRepo.findOneBy({ id: data.vote_id })
+            if (!vote) {
+                throw new CustomError(404, 'Vote not found')
+            }
+        }
         const newAg = agRepository.create({ ...data, mannager_id: userid });
         return await agRepository.save(newAg);
     }

@@ -7,7 +7,9 @@ export const createAgValidation = Joi.object({
     ag_date: Joi.date().required(),
     location: Joi.string().required(),
     minimum_participants: Joi.number().required(),
-    category: Joi.string().valid(...Object.values(ag_category)).optional()
+    category: Joi.string().valid(...Object.values(ag_category)).optional(),
+    vote_id: Joi.number().optional(),
+    ban_appeal_id: Joi.number().optional()
 }).options({ abortEarly: false });
 
 export const selectAgValidation = Joi.object({
@@ -30,6 +32,8 @@ export interface createAgValidationRequest {
     location: string;
     minimum_participants: number;
     category? : ag_category;
+    vote_id?: number;
+    ban_appeal_id?: number;
 }
 
 export interface selectedAgRequest {

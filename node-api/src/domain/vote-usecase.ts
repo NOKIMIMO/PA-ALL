@@ -2,15 +2,35 @@ import { DataSource } from 'typeorm';
 import { Vote } from '../database/models/vote';
 import { Option } from '../database/models/option';
 import { UserVote } from '../database/models/userVote';
-import { CreateVoteValidationRequest } from '../Validators/voteValidator';
+import { CreateVoteValidationRequest, ListVotesRequest, VoteResponse } from '../Validators/voteValidator';
 import { CustomError } from '../common/error/customError';
 
 export class VoteUseCase {
     constructor(private readonly db: DataSource) {}
 
-    async listVotes(): Promise<Vote[]> {
-        const voteRepository = this.db.getRepository(Vote);
-        return await voteRepository.find({ relations: ['options'] });
+    async listVotes(filter : ListVotesRequest): Promise<VoteResponse[]> {
+        const query = this.db.getRepository(Vote).createQueryBuilder('vote');
+        if (filter.start_date) {
+            query.andWhere('vote.createdAt >= :start_date', { start_date: filter.start_date });
+        }
+        if (filter.end_date) {
+            query.andWhere('vote.endDate <= :end_date', { end_date: filter.end_date });
+        }
+        if (filter.limit) {
+            query.limit(filter.limit);
+            if (filter.page) {
+                query.offset((filter.page - 1) * filter.limit);
+            }
+        }
+  
+        //also get related options
+        query.leftJoinAndSelect('vote.options', 'options'); 
+        return await query.getMany();
+
+
+
+        // const voteRepository = this.db.getRepository(Vote);
+        // return await voteRepository.find({ relations: ['options'] });
     }
 
     async createVote(data: CreateVoteValidationRequest): Promise<Vote> {
@@ -19,7 +39,8 @@ export class VoteUseCase {
         const newVote = voteRepository.create({ 
             title: data.title, 
             description: data.description,
-            endDate: data.endDate
+            endDate: data.endDate,
+            secondRoundEnabled: data.secondRoundEnabled
         });
     
         const savedVote = await voteRepository.save(newVote);

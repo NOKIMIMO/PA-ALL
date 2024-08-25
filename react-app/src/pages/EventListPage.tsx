@@ -14,7 +14,6 @@ interface Event {
   event_date: string;
   location: string;
   userId: number;
-  isAG: boolean;
 }
 
 interface EventsResponse {
@@ -188,7 +187,6 @@ export default function EventListPage() {
                   showActions={isAdmin} // Show edit and delete actions only if admin
                   onEdit={() => setEditingEvent(event)}
                   onDelete={() => handleDelete(event.id)}
-                  isAG={event.isAG}
                 />
               )
             ))

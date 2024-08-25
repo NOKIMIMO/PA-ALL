@@ -27,7 +27,7 @@ export default function AGListPage() {
   const [ags, setAgs] = useState<Ag[]>([]);
   const [startDate, setStartDate] = useState<string>(getTodayDate());
   const [endDate, setEndDate] = useState<string>("");
-  const [creatingAg, setCreatingAg ] = useState<boolean>(false);
+  const [creatingAg, setCreatingAg] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +67,7 @@ export default function AGListPage() {
         setError('Invalid AGs format');
       }
     } catch (err) {
-        console.log(err);
+      console.log(err);
       setError('Something went wrong');
     } finally {
       setLoading(false);
@@ -76,7 +76,7 @@ export default function AGListPage() {
 
   return (
     <div className="container mx-auto mt-5 p-4">
-        <div className="flex justify-between mb-4">
+      <div className="flex justify-between mb-4">
         <div>
           <label className="block text-gray-700 text-sm font-bold mb-2">
             Start Date:
@@ -114,14 +114,14 @@ export default function AGListPage() {
               onClick={() => setCreatingAg(true)}
               className="bg-blue-500 text-white px-4 py-2 rounded-md"
             >
-              Create Event
+              Create Ag
             </button>
           </div>
         )}
       </div>
       {
         creatingAg && (
-          <CreateAg onEventCreated={handleAgCreated} onCancel={() => setCreatingAg(false)}/>
+          <CreateAg onEventCreated={handleAgCreated} onCancel={() => setCreatingAg(false)} />
         )
       }
       <h1 className="text-3xl font-bold mb-4">AG List</h1>
@@ -129,15 +129,15 @@ export default function AGListPage() {
       {error && <div className="text-red-500">{error}</div>}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {ags.map((ag) => (
-            <Card
+          <Card
             key={ag.id}
             title={ag.title}
             content={ag.description}
             subtext={ag.ag_date}
             pageLink={"./Ag/AgPage/" + ag.id}
             showActions={isAdmin} // Show edit and delete actions only if admin
-            onEdit={() => {}}
-            onDelete={() => {}}
+            onEdit={() => { }}
+            onDelete={() => { }}
           />
         ))}
       </div>

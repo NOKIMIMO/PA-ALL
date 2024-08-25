@@ -14,6 +14,7 @@ interface PatchEventByIdBody {
     description?: string;
     event_date?: string;
     location?: string;
+    max_participants: number;
     eventId?: number;
     category_event?: event_category_event
     category_animal?: event_category_animal
@@ -24,7 +25,7 @@ interface CreateEventBody {
     description: string;
     event_date: string;
     location: string;
-    isAG: boolean;
+    max_participants: number;
     usersId: [];
     category_event?: event_category_event
     category_animal?: event_category_animal

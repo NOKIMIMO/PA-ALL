@@ -16,7 +16,7 @@ const VoteList: React.FC = () => {
         setLoading(true);
         try {
             const voteService = VoteService;
-            const data = await voteService.getVotes();
+            const data = await voteService.getVotes({});
             setVotes(data || []); // Ensure votes is an array
         } catch (error: any) {
             setError(error.message || 'An unknown error occurred');

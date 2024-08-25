@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { EventService } from '../../services/EventService';
 import UserService from '../../services/UserService';
+import { useUser } from '../../context/UserContext';
+import { user_access_type } from '../../commons/user_access_type';
 
 export default function EventPage() {
     const { eventId } = useParams<{ eventId: string }>();
@@ -13,7 +15,9 @@ export default function EventPage() {
     const [isParticipating, setIsParticipating] = useState<boolean>(false);
     const [totalMembers, setTotalMembers] = useState<number>(0);
     const [minParticipants, setMinParticipants] = useState<number>(0);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const { user } = useUser();
+
+    const isAdmin = user?.role === user_access_type.ADMIN || user?.role === user_access_type.SUPER_ADMIN;
 
     const eventService = new EventService();
     const userService = UserService;
@@ -64,14 +68,8 @@ export default function EventPage() {
             }
         };
 
-        const checkAdminRole = () => {
-            const role = localStorage.getItem('role');
-            setIsAdmin(role === 'admin');
-        };
-
         fetchEvent();
         fetchParticipants();
-        checkAdminRole();
     }, [eventId]);
 
     const handleJoinEvent = async () => {

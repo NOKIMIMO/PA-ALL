@@ -29,6 +29,8 @@ interface CreateAgRequest {
     location: string;
     minimum_participants: number;
     category?: ag_category;
+    vote_id?: number;
+    ban_appeal_id?: number;
 }
 
 interface UpdateAgRequest {
