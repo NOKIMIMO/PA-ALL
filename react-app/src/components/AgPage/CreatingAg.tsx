@@ -112,6 +112,7 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
               value={ag_date}
               onChange={(e) => setAg_date(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md"
+              min={new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0]}
               required
             />
           </div>
@@ -162,7 +163,10 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
       </div>
       {/* modal for creating or choosing vote event  */}
       {creatingVoting && (
-        <VotingModal onClose={() => setCreatingVoting(false)} handleAgSubmit={handleAgSubmit} />
+        <VotingModal onClose={() => 
+          setCreatingVoting(false)} 
+          handleAgSubmit={handleAgSubmit} 
+          createAgRequest={request!}/>
       )}
     </div>
   );

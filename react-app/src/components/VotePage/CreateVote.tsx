@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { IVoteService } from '../../services/VoteService';
 import VoteService from '../../services/VoteService';
 
-const CreateVote: React.FC<{ onCreateVote: () => void }> = ({ onCreateVote }) => {
+interface CreateVoteProps {
+    onVoteCreated: (vote: any) => void; // Add this prop to pass the created vote
+    onCreateVote: () => void;  // Existing prop
+    voteDate?: string;
+}
+
+const CreateVote: React.FC<CreateVoteProps> = ({ onCreateVote, onVoteCreated, voteDate }) => {
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
@@ -12,14 +18,17 @@ const CreateVote: React.FC<{ onCreateVote: () => void }> = ({ onCreateVote }) =>
     const handleCreateVote = async () => {
         try {
             const voteService: IVoteService = VoteService;
-            await voteService.createVote({
+            const vote = await voteService.createVote({
                 title,
                 description,
-                endDate: new Date(endDate),
+                endDate: new Date(voteDate ? voteDate : endDate),
                 secondRoundEnabled,
                 options: options.map(name => ({ name }))
             });
-            onCreateVote();
+            console.log('Vote created:', vote);
+            onVoteCreated(vote); // Call the callback with the created vote
+            onCreateVote();  // Call the existing callback
+            // Reset form fields after creation
             setTitle('');
             setDescription('');
             setEndDate('');
@@ -65,9 +74,10 @@ const CreateVote: React.FC<{ onCreateVote: () => void }> = ({ onCreateVote }) =>
             />
             <input
                 type="date"
-                value={endDate}
+                value={voteDate ? voteDate : endDate}
                 onChange={e => setEndDate(e.target.value)}
                 className="w-full p-2 mb-4 border rounded-md"
+                disabled={!!voteDate}
             />
             <label className="flex items-center mb-4">
                 <input

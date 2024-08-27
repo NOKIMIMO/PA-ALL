@@ -14,7 +14,7 @@ export class VoteUseCase {
             query.andWhere('vote.createdAt >= :start_date', { start_date: filter.start_date });
         }
         if (filter.end_date) {
-            query.andWhere('vote.endDate <= :end_date', { end_date: filter.end_date });
+            query.andWhere('vote.endDate >= :end_date', { end_date: filter.end_date });
         }
         if (filter.limit) {
             query.limit(filter.limit);
@@ -25,7 +25,8 @@ export class VoteUseCase {
   
         //also get related options
         query.leftJoinAndSelect('vote.options', 'options'); 
-        return await query.getMany();
+        const votes = await query.getMany();
+        return votes
 
 
 
