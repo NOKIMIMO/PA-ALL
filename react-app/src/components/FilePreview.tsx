@@ -61,7 +61,7 @@ const FilePreview = ({ selectedFile }: FilePreviewProps) => {
     if (selectedFile.type === 'pdf') {
         return (
             <div className="flex items-center justify-center w-full h-full">
-                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                     <div style={{ height: '750px', width: '100%' }}>
                         <Viewer fileUrl={data} />
                     </div>

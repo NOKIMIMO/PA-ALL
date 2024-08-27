@@ -115,6 +115,13 @@ export class UserUseCase {
         if (!isValid) {
             return null
         }
+        //check license expiry
+        const licenseRepo = db.getRepository(License)
+        const license = await licenseRepo.findOneBy({ userId: user.id, active: true })
+        if (license && license.expirationDate < new Date()) {
+            license.active = false
+            await licenseRepo.save(license)
+        }
         //check with ban tickets
         const userResponse = {
             id: user.id,

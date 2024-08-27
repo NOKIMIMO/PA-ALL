@@ -88,6 +88,7 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md"
+            min={new Date(Date.now() + 86400000 * 4).toISOString().split('T')[0]} // Set min date to tomorrow
             required
           />
         </div>

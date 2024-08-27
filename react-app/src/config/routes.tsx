@@ -45,7 +45,15 @@ const routes: IRoute[] = [
     {
         path: '/admin',
         name: 'Admin Page',
-        component: AdminPage,
+        component: () => (
+            <ProtectedRoute
+                requiredRole={[
+                    user_access_type.SUPER_ADMIN,
+                ]}
+            >
+                <AdminPage />
+            </ProtectedRoute>
+        ),
         exact: true,
         keywords: { admin: 5, management: 4, dashboard: 3 },
     },
