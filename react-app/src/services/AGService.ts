@@ -129,6 +129,21 @@ class AgService implements IAgService {
         return this.handleResponse(response);
     }
 
+    async getAgParticipants(id: number): Promise<any> {
+        const response = await fetch(`/api/v1/events/${id}/users`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new CustomError(response.status, data.error || 'Something went wrong');
+        }
+        return data;
+    }
+
     // List AGs where the current user has joined
     async listAgsJoined() {
         const response = await fetch(`${BASE_URL}/joined`, {

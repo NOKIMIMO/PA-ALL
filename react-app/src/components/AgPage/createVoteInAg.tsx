@@ -77,7 +77,11 @@ const VotingModal: React.FC<VotingModalProps> = ({
     setVoteList((prevList) => [...prevList, newVote]); // Add the new vote to the list
     setSelectedVote(newVote); // Optionally select the new vote
     setShowCreateVote(false); // Close the creation form
-    handleConfirm(); // Automatically confirm the new vote
+    if (newVote) {
+      console.log("Created Vote:", newVote);
+      handleAgSubmit(newVote);
+      onClose();
+    }
   };
 
   const handleConfirm = () => {

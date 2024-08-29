@@ -19,6 +19,7 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import { user_access_type } from '../commons/user_access_type';
 import NotAuthorizedPage from '../pages/403';
 import AGListPage from '../pages/AGListPage';
+import AGPage from '../pages/AG/AGPage';
 
 const routes: IRoute[] = [
     {
@@ -128,7 +129,7 @@ const routes: IRoute[] = [
                     user_access_type.SUPER_ADMIN,
                 ]}
             >
-                <EventPage />
+                <AGPage />
             </ProtectedRoute>
         ),
         exact: true,

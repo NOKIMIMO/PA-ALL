@@ -155,13 +155,13 @@ router.get('/joined',
 router.get('/:agId',
     authMiddleware,
     validatorMiddleware(selectAgValidation, 'params'),
-    async (req: Request, res: Response): Promise<void> => {
+    async (req: Request & {user? : JwtPayload}, res: Response): Promise<void> => {
         const agId = parseInt(req.params.agId);
         try {
             const agUsecase = new AgUseCase(db);
-            const ag = await agUsecase.getAgById(agId);
+            const ag = await agUsecase.getAgById(agId, req.user?.userId!);
             res.status(200);
-            res.json({message :ag});
+            res.json(ag);
         } catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code).send({ error: error.message });
@@ -343,6 +343,32 @@ router.post('/:agId/remove',
         catch (error) {
             if (error instanceof CustomError) {
                 res.status(error.code).send({ error: error.message });
+            } else {
+                res.status(500);
+                res.json({ error: 'Internal error' });
+            }
+        }
+    }
+)
+
+router.get('/:agId/users',
+    authMiddleware,
+    validatorMiddleware(selectAgValidation, 'params'),
+    async (req: Request, res: Response): Promise<void> => {
+        const getEventRequest = { ...req.body, ...req.params };
+        try {
+            const agUseCase = new AgUseCase(db);
+            const users = await agUseCase.listAgParticipants({ ...getEventRequest });
+            if (!users) {
+                res.status(404);
+                res.json({ error: 'Event not found' });
+                return;
+            }
+            res.status(200);
+            res.json({ users: users });
+        } catch (error) {
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
             } else {
                 res.status(500);
                 res.json({ error: 'Internal error' });

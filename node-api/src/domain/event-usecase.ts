@@ -317,13 +317,25 @@ export default class EventUseCase {
         return string
     }
 
-    async listEventParticipants(data: selectEventRequest): Promise<User[]> {
+    async listEventParticipants(data: selectEventRequest): Promise<UserResponse[]> {
         const repo = this.db.getRepository(UsersEvents)
         const userRepo = this.db.getRepository(User)
         const userEvents = await repo.find({ where: { eventid: data.eventId } })
         const userIds = userEvents.map(userEvent => userEvent.userid);
         const users = await userRepo.find({ where: { id: In(userIds) } });
-        return users
+        const userResponse = users.map(user => {
+            return {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                lastname: user.lastname,
+                firstname: user.firstname,
+                active: user.active,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
+        })
+        return userResponse
     }
 
 }
