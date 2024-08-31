@@ -10,6 +10,7 @@ interface Event {
     event_date: string;
     location: string;
     userId: number;
+    max_participants: number;
 }
 
 const EventTable: React.FC = () => {
@@ -65,7 +66,8 @@ const EventTable: React.FC = () => {
                 title: editingEvent.title,
                 description: editingEvent.description,
                 event_date: editingEvent.event_date,
-                location: editingEvent.location
+                location: editingEvent.location,
+                max_participants : editingEvent.max_participants,
             };
             try {
                 await eventService.patchEventById(editingEvent.id.toString(), updateData);

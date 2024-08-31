@@ -14,6 +14,7 @@ interface Event {
   event_date: string;
   location: string;
   userId: number;
+  max_participants: number;
 }
 
 interface EventsResponse {
