@@ -228,6 +228,7 @@ const routes: IRoute[] = [
             <ProtectedRoute
                 requiredRole={[
                     user_access_type.LICENSED,
+                    user_access_type.USER,
                     user_access_type.ADMIN,
                     user_access_type.EMPLOYEE,
                     user_access_type.SUPER_ADMIN,
@@ -242,14 +243,38 @@ const routes: IRoute[] = [
     {
         path: '/licenses',
         name: 'License',
-        component: LicensePage,
+        component: () => (
+            <ProtectedRoute
+                requiredRole={[
+                    user_access_type.LICENSED,
+                    user_access_type.USER,
+                    user_access_type.ADMIN,
+                    user_access_type.EMPLOYEE,
+                    user_access_type.SUPER_ADMIN,
+                ]}
+            >
+                <LicensePage />
+            </ProtectedRoute>
+        ),
         exact: true,
         keywords: { license: 5, agreement: 4, permission: 3 },
     },
     {
         path: '/payment-redirect',
         name: 'Stripe Redirect',
-        component: PaymentRedirectPage,
+        component: () => (
+            <ProtectedRoute
+                requiredRole={[
+                    user_access_type.LICENSED,
+                    user_access_type.USER,
+                    user_access_type.ADMIN,
+                    user_access_type.EMPLOYEE,
+                    user_access_type.SUPER_ADMIN,
+                ]}
+            >
+                <PaymentRedirectPage />
+            </ProtectedRoute>
+        ),
         exact: true,
         keywords: { payment: 5, redirect: 4, stripe: 3 },
     },
