@@ -42,16 +42,18 @@ router.get('/licenses',
                 expand: ['data.product'],
             });
 
-            const licenses: MembershipResponse[] = productInfo.data.map((prices) => {
-                const product = prices.product as Stripe.Product; // Type assertion here
-                const paymentMode = prices.recurring ? 'subscription' : 'payment';
+            const licenses: MembershipResponse[] = productInfo.data
+            .filter(price => price.active)  // Filter for active products
+            .map((price) => {
+                const product = price.product as Stripe.Product; // Type assertion here
+                const paymentMode = price.recurring ? 'subscription' : 'payment';
                 return {
                     id: product.id,
-                    price_id: prices.id,
+                    price_id: price.id,
                     name: product.name,
-                    price: 0.01 * prices.unit_amount!,
+                    price: 0.01 * price.unit_amount!,
                     description: product.description ? product.description : '',
-                    features: product.marketing_features.map((feature) => feature.name || ''), // Assuming features come from marketing_features
+                    features: product.marketing_features ? product.marketing_features.map((feature) => feature.name || '') : [], // Ensure marketing_features is defined
                     payment_mode: paymentMode,
                 };
             });
@@ -66,11 +68,17 @@ router.get('/licenses',
     });
 
     router.post('/webhook', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-        const sig = req.headers['stripe-signature'];
+        console.log('Raw Body:', req.body.toString('utf8'));
+        const sig = req.headers['stripe-signature'] as string | undefined;
+
+        if (!sig) {
+            console.error('Missing stripe-signature header');
+            return res.status(400).send('Webhook Error: Missing stripe-signature header');
+        }
     
         let event;
         try {
-            event = stripe.webhooks.constructEvent(req.body, sig!, process.env.STRIPE_WEBHOOK_SECRET!);
+            event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
         } catch (err) {
             console.error('Webhook signature verification failed.', (err as Error).message);
             return res.status(400).send(`Webhook Error: ${(err as Error).message}`);
@@ -79,8 +87,7 @@ router.get('/licenses',
         // Handle the event
         switch (event.type) {
             case 'invoice.payment_succeeded':
-                const invoice = event.data.object;
-                // Send the invoice manually if not already sent
+                const invoice = event.data.object as Stripe.Invoice;
                 try {
                     await stripe.invoices.sendInvoice(invoice.id);
                     console.log(`Invoice sent to ${invoice.customer_email}`);
@@ -88,7 +95,6 @@ router.get('/licenses',
                     console.error(`Failed to send invoice: ${(err as Error).message}`);
                 }
                 break;
-            // Handle other event types as necessary
             default:
                 console.log(`Unhandled event type ${event.type}`);
         }
