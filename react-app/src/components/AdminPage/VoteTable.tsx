@@ -30,7 +30,7 @@ const VoteTable: React.FC = () => {
 
     const fetchVotes = async () => {
         try {
-            const data = await VoteService.getVotes();
+            const data = await VoteService.getVotes({ page, limit });
             if (data instanceof CustomError) {
                 setError(data.message);
             } else if (Array.isArray(data)) {

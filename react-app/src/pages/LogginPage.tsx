@@ -53,7 +53,7 @@ export default function LogginPage() {
                 navigate('/');
             }
         } else {
-            const result = await AuthService.register(formData.email, formData.password);
+            const result = await AuthService.register(formData.email, formData.password, formData.firstname, formData.lastname);
 
             if (result instanceof CustomError) {
                 setError(result.message);

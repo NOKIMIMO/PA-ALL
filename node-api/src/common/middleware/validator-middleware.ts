@@ -10,7 +10,6 @@ export const validatorMiddleware = (
       try {
         // console.log(req[location]);
         const data = req[location];
-
         const { error, value } = validator.validate(data, { stripUnknown: true });
 
         if (error) {

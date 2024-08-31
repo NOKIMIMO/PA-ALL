@@ -17,10 +17,10 @@ import BanTicketController from './BanTicketController';
 
 const router = Router();
 router.get('/',
-    validatorMiddleware(ListUserValidation, 'body'),
+    validatorMiddleware(ListUserValidation, 'query'),
     authMiddleware,
     async (req: Request, res: Response): Promise<void> => {
-        const listUserRequest = req.body;
+        const listUserRequest = req.query;
         try {
             const UserUsecase = new UserUseCase(db);
             const listUser = await UserUsecase.listUsers({ ...listUserRequest });
@@ -42,7 +42,7 @@ router.get('/self',
                 throw new CustomError(404, 'User not found');
             }
             res.status(200);
-            res.json({ id: user.id, email: user.email, role: user.role });
+            res.json({ user});
         } catch (error) {
             console.log(error);
             res.status(500);
@@ -89,9 +89,12 @@ router.delete('/:id',
 
 
 router.patch('/:id',
+    authMiddleware,
+    accessMiddleware(
+        () => { return [user_access_type.SUPER_ADMIN]; }
+    ),
     validatorMiddleware(selectUserValidation, 'params'),
     validatorMiddleware(updateUserValidation, 'body'),
-    authMiddleware,
     async (req: Request & { user?: User }, res: Response): Promise<void> => {
         const updateUserRequest = req.body;
         const userId = Number(req.params.id); // Récupérez l'ID de l'utilisateur à partir de req.params

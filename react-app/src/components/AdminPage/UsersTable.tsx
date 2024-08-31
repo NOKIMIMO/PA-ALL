@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import UserService from '../../services/UserService';
 import { CustomError } from '../../commons/Error';
+import GenericTable from './GenereicTable';
+import { useUser } from '../../context/UserContext';
 
 interface User {
     id: number;
@@ -14,7 +16,8 @@ const UserTable: React.FC = () => {
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
     const [error, setError] = useState<string | null>(null);
-    const [editingUser, setEditingUser] = useState<User | null>(null); // State to track the user being edited
+    const [editingUser, setEditingUser] = useState<User | null>(null);
+    const { user } = useUser();
 
     useEffect(() => {
         fetchUsers();
@@ -39,6 +42,10 @@ const UserTable: React.FC = () => {
 
     const handleDelete = async (id: number) => {
         try {
+            if (user?.id === id) {
+                setError('You cannot delete yourself');
+                return;
+            }
             await UserService.deleteUserById(id.toString());
             fetchUsers();
         } catch (err) {
@@ -58,7 +65,6 @@ const UserTable: React.FC = () => {
         if (editingUser) {
             try {
                 await UserService.patchUserById(editingUser.id.toString(), {
-                    id: editingUser.id,
                     email: editingUser.email,
                     role: editingUser.role
                 });
@@ -76,99 +82,68 @@ const UserTable: React.FC = () => {
         }
     };
 
+    const headers = ['ID', 'Email', 'Role'];
+
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">User Management</h1>
-            {error && <div className="bg-red-200 text-red-800 p-2 mb-4 rounded">{error}</div>}
-            <table className="min-w-full bg-white border border-gray-200">
-                <thead>
-                    <tr>
-                        <th className="py-2 px-4 border-b">ID</th>
-                        <th className="py-2 px-4 border-b">Email</th>
-                        <th className="py-2 px-4 border-b">Role</th>
-                        <th className="py-2 px-4 border-b">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id}>
-                            <td className="py-2 px-4 border-b">{user.id}</td>
-                            <td className="py-2 px-4 border-b">
-                                {editingUser && editingUser.id === user.id ? (
-                                    <input
-                                        type="text"
-                                        name="email"
-                                        value={editingUser.email}
-                                        onChange={handleChange}
-                                        className="border px-2 py-1"
-                                    />
-                                ) : (
-                                    user.email
-                                )}
-                            </td>
-                            <td className="py-2 px-4 border-b">
-                                {editingUser && editingUser.id === user.id ? (
-                                    <select
-                                        name="role"
-                                        value={editingUser.role}
-                                        onChange={handleChange}
-                                        className="border px-2 py-1"
-                                    >
-                                        <option value="user">User</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                ) : (
-                                    user.role
-                                )}
-                            </td>
-                            <td className="py-2 px-4 border-b">
-                                {editingUser && editingUser.id === user.id ? (
-                                    <>
-                                        <button
-                                            className="bg-green-500 text-white px-2 py-1 rounded mr-2"
-                                            onClick={handleSaveEdit}
-                                        >
-                                            Save
-                                        </button>
-                                        <button
-                                            className="bg-gray-500 text-white px-2 py-1 rounded"
-                                            onClick={handleCancelEdit}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button
-                                            className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
-                                            onClick={() => handleEdit(user)}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="bg-red-500 text-white px-2 py-1 rounded"
-                                            onClick={() => handleDelete(user.id)}
-                                        >
-                                            Delete
-                                        </button>
-                                    </>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <div className="flex justify-between items-center mt-4">
+        <div className="container mx-auto p-8 bg-black text-white rounded-xl shadow-2xl">
+            <h1 className="text-4xl font-bold mb-8 text-center">User Management</h1>
+            {error && <div className="bg-red-600 text-white p-4 mb-8 rounded-lg">{error}</div>}
+            <GenericTable<User>
+                headers={headers}
+                rows={users}
+                renderRow={(user, isEditing, handleInputChange) => (
+                    <>
+                        <td className="py-2 px-4 border-b">{user.id}</td>
+                        <td className="py-2 px-4 border-b">
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    name="email"
+                                    value={user.email}
+                                    onChange={handleInputChange}
+                                    className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                                    disabled
+                                />
+                            ) : (
+                                user.email
+                            )}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                            {isEditing ? (
+                                <select
+                                    name="role"
+                                    value={user.role}
+                                    onChange={handleInputChange}
+                                    className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                                >
+                                    <option value="user">User</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="super_admin">Super Admin</option>
+                                </select>
+                            ) : (
+                                user.role
+                            )}
+                        </td>
+                       
+                    </>
+                )}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onSaveEdit={handleSaveEdit}
+                onCancelEdit={handleCancelEdit}
+                editingRow={editingUser}
+            />
+            <div className="flex justify-between items-center mt-8">
                 <button
-                    className="bg-gray-500 text-white px-3 py-1 rounded"
+                    className="bg-yellow-500 text-black px-6 py-3 rounded-full shadow-lg hover:bg-yellow-600 transition"
                     disabled={page === 1}
                     onClick={() => setPage(page - 1)}
                 >
                     Previous
                 </button>
-                <span>Page {page}</span>
+                <span className="text-gray-400 text-xl font-semibold">Page {page}</span>
                 <button
-                    className="bg-gray-500 text-white px-3 py-1 rounded"
+                    className="bg-yellow-500 text-black px-6 py-3 rounded-full shadow-lg hover:bg-yellow-600 transition"
                     onClick={() => setPage(page + 1)}
                 >
                     Next

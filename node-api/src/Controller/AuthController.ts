@@ -1,4 +1,3 @@
-import { Message } from './../../../react-app/src/services/MessageService';
 import { Request, Response, Router } from 'express';
 import { createUserValidation,LoginUserValidation } from '../Validators/userValidator';
 import {generateValidationErrorMessage} from '../common/generate-validation-msg';

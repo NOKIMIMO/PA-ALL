@@ -11,7 +11,29 @@ import { AgTask } from "../database/models/agTask";
 import { UserAgTask } from "../database/models/user-agTask";
 import { UserResponse } from "../Validators/userValidator";
 import { UsersAgs } from "../database/models/users-ag";
+import { Vote } from "../database/models/vote";
+import { UserVote } from "../database/models/userVote";
 
+interface VoteInAgResponse {
+    vote : Vote;
+    userVoted: boolean;
+}
+
+interface AgResponse {
+    id: number;
+    title: string;
+    description: string;
+    ag_date: Date;
+    location: string;
+    minimum_participants: number;
+    mannager_id: number;
+    vote_id: number | null;
+    ban_appeal_id: number | null;
+    ban_appeal_info?: any;
+    vote_info?: VoteInAgResponse;
+    createdAt: Date;
+    updatedAt: Date;
+}
 
 export default class AgUseCase {
 
@@ -34,6 +56,26 @@ export default class AgUseCase {
         const userAg = await agUserRepo.find({ where: { userid: userId } })
         const ags = await agRepo.find({ where: { id: In(userAg.map(t => t.agId)) } })
         return { ags, totalCount: ags.length }
+    }
+
+    async listAgParticipants(agId: number): Promise<UserResponse[]> {
+        const agUserRepo = this.db.getRepository(UsersAgs)
+        const userRepo = this.db.getRepository(User)
+        const userAg = await agUserRepo.find({ where: { agId } })
+        const users = await userRepo.find({ where: { id: In(userAg.map(t => t.userid)) }})
+        const userResponse = users.map(user => {
+            return {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                lastname: user.lastname,
+                firstname: user.firstname,
+                active: user.active,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
+        })
+        return userResponse
     }
 
     async getAgMannager(agId: number): Promise<UserResponse> {
@@ -74,15 +116,23 @@ export default class AgUseCase {
         return { ags, totalCount }
     }
     async listAgsWhereTaskAssigned(userId: number): Promise<{ ags: Ag[]; totalCount: number; }> {
-        const agRepo = this.db.getRepository(Ag)
-        const agTaskRepo = this.db.getRepository(AgTask)
-        const userAgTaskRepo = this.db.getRepository(UserAgTask);
-        const taskAgs = await userAgTaskRepo.find({ where: { userId: userId } })
+        const userRepository = this.db.getRepository(User)
+        const user = await userRepository.findOneBy({ id: userId })
+        if (!user) {
+            throw new CustomError(404,'User not found')
+        }
+        const userTaskRepository = this.db.getRepository(UserAgTask);
+        const UserTaks = await userTaskRepository.findBy({ userId: userId });
 
-        const agTasks = await agTaskRepo.find({ where: { id: In(taskAgs.map(t => t.agTaskId)) } })
+        const taskRepository = this.db.getRepository(AgTask);
+        const tasksIds = UserTaks.map((userTask) => userTask.agTaskId);
+        const tasks = await taskRepository.findBy({ id: In(tasksIds) });
 
-        const ag = await agRepo.find({ where: { id: In(agTasks.map(t => t.id)) } })
-        return { ags: ag, totalCount: ag.length }
+        const agRepository = this.db.getRepository(Ag);
+        const agIds = tasks.map((task) => task.agId);
+        const ags = await agRepository.findBy({ id: In(agIds) });
+    
+        return { ags, totalCount: ags.length }
 
     }
 
@@ -94,16 +144,50 @@ export default class AgUseCase {
 
     async createAg(data: createAgValidationRequest, userid: number): Promise<Ag> {
         const agRepository = this.db.getRepository(Ag);
+        if (data.vote_id) {
+            const voteRepo = this.db.getRepository(Vote)
+            const vote = await voteRepo.findOneBy({ id: data.vote_id })
+            if (!vote) {
+                throw new CustomError(404, 'Vote not found')
+            }
+        }
         const newAg = agRepository.create({ ...data, mannager_id: userid });
         return await agRepository.save(newAg);
     }
-    async getAgById(id: number): Promise<Ag | null> {
+    async getAgById(id: number,userId : number): Promise<any | null> {
         const repo = this.db.getRepository(Ag)
         const ag = await repo.findOneBy({ id })
         if (!ag) {
             throw new CustomError(404, 'Ag not found')
         }
-        return ag
+        const agResponse: AgResponse = {
+            id: ag.id,
+            title: ag.title,
+            description: ag.description,
+            ag_date: ag.ag_date,
+            location: ag.location,
+            minimum_participants: ag.minimum_participants,
+            mannager_id: ag.mannager_id,
+            vote_id: ag.vote_id,
+            ban_appeal_id: ag.ban_appeal_id,
+            createdAt: ag.createdAt,
+            updatedAt: ag.updatedAt
+        }
+        if (ag.vote_id) {
+            const voteRepo = this.db.getRepository(Vote)
+            const vote = await voteRepo.findOne({ where: { id }, relations: ['options'] });
+            if (!vote) {
+                throw new CustomError(404, 'Vote not found')
+            }
+            const userVoteRepository = this.db.getRepository(UserVote);
+
+            const userVote = await userVoteRepository.findOne({ where: { voteId: id, userId } });
+            agResponse.vote_info = {
+                vote,
+                userVoted: !!userVote
+            }
+        }
+        return agResponse
     }
 
     async updateAg(data: createAgValidationRequest, agId: number, userId: number): Promise<Ag | null> {

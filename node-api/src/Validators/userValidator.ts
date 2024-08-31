@@ -28,7 +28,6 @@ export const selectUserValidation = Joi.object({
     id: Joi.number().required()
 })
 export interface UpdateUserRequest {
-    id: number
     email?: string
     password?: string
     role?: string
@@ -40,10 +39,9 @@ export interface GiveRoleToUserRequest {
 }
 
 export const updateUserValidation = Joi.object({
-    id: Joi.number().required(),
     email: Joi.string().email().optional(),
     password: Joi.string().optional(),
-    role: Joi.string().optional()
+    role: Joi.string().valid(...Object.values(user_access_type)).optional()
 })
 
 export const giveRoleToUserValidation = Joi.object({

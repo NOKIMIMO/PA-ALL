@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {EventService} from '../../services/EventService';
+import { EventService } from '../../services/EventService';
 import { CustomError } from '../../commons/Error';
+import GenericTable from './GenereicTable';
 
 interface Event {
     id: number;
@@ -9,7 +10,7 @@ interface Event {
     event_date: string;
     location: string;
     userId: number;
-    isAG: boolean;
+    max_participants: number;
 }
 
 const EventTable: React.FC = () => {
@@ -65,7 +66,8 @@ const EventTable: React.FC = () => {
                 title: editingEvent.title,
                 description: editingEvent.description,
                 event_date: editingEvent.event_date,
-                location: editingEvent.location
+                location: editingEvent.location,
+                max_participants : editingEvent.max_participants,
             };
             try {
                 await eventService.patchEventById(editingEvent.id.toString(), updateData);
@@ -83,125 +85,88 @@ const EventTable: React.FC = () => {
         }
     };
 
+    const headers = ['ID', 'Title', 'Description', 'Date', 'Location'];
+
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Event Management</h1>
-            {error && <div className="bg-red-200 text-red-800 p-2 mb-4 rounded">{error}</div>}
-            <table className="min-w-full bg-white border border-gray-200">
-                <thead>
-                    <tr>
-                        <th className="py-2 px-4 border-b">ID</th>
-                        <th className="py-2 px-4 border-b">Title</th>
-                        <th className="py-2 px-4 border-b">Description</th>
-                        <th className="py-2 px-4 border-b">Date</th>
-                        <th className="py-2 px-4 border-b">Location</th>
-                        <th className="py-2 px-4 border-b">Actions</th>
-                        <th className="py-2 px-4 border-b">IsAG</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {events.map((event) => (
-                        <tr key={event.id}>
-                            <td className="py-2 px-4 border-b">{event.id}</td>
-                            <td className="py-2 px-4 border-b">
-                                {editingEvent && editingEvent.id === event.id ? (
-                                    <input
-                                        type="text"
-                                        name="title"
-                                        value={editingEvent.title}
-                                        onChange={handleChange}
-                                        className="border px-2 py-1"
-                                    />
-                                ) : (
-                                    event.title
-                                )}
-                            </td>
-                            <td className="py-2 px-4 border-b">
-                                {editingEvent && editingEvent.id === event.id ? (
-                                    <textarea
-                                        name="description"
-                                        value={editingEvent.description}
-                                        onChange={handleChange}
-                                        className="border px-2 py-1"
-                                    />
-                                ) : (
-                                    event.description
-                                )}
-                            </td>
-                            <td className="py-2 px-4 border-b">
-                                {editingEvent && editingEvent.id === event.id ? (
-                                    <input
-                                        type="date"
-                                        name="event_date"
-                                        value={editingEvent.event_date}
-                                        onChange={handleChange}
-                                        className="border px-2 py-1"
-                                    />
-                                ) : (
-                                    event.event_date
-                                )}
-                            </td>
-                            <td className="py-2 px-4 border-b">
-                                {editingEvent && editingEvent.id === event.id ? (
-                                    <input
-                                        type="text"
-                                        name="location"
-                                        value={editingEvent.location}
-                                        onChange={handleChange}
-                                        className="border px-2 py-1"
-                                    />
-                                ) : (
-                                    event.location
-                                )}
-                            </td>
-                            <td className="py-2 px-4 border-b">
-                                {editingEvent && editingEvent.id === event.id ? (
-                                    <>
-                                        <button
-                                            className="bg-green-500 text-white px-2 py-1 rounded mr-2"
-                                            onClick={handleSaveEdit}
-                                        >
-                                            Save
-                                        </button>
-                                        <button
-                                            className="bg-gray-500 text-white px-2 py-1 rounded"
-                                            onClick={handleCancelEdit}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button
-                                            className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
-                                            onClick={() => handleEdit(event)}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="bg-red-500 text-white px-2 py-1 rounded"
-                                            onClick={() => handleDelete(event.id)}
-                                        >
-                                            Delete
-                                        </button>
-                                    </>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <div className="flex justify-between items-center mt-4">
+        <div className="container mx-auto p-8 bg-black text-white rounded-xl shadow-2xl">
+            <h1 className="text-4xl font-bold mb-8 text-center">Event Management</h1>
+            {error && <div className="bg-red-600 text-white p-4 mb-8 rounded-lg">{error}</div>}
+            <GenericTable<Event>
+                headers={headers}
+                rows={events}
+                renderRow={(event, isEditing, handleInputChange) => (
+                    <>
+                        <td className="py-2 px-4 border-b">{event.id}</td>
+                        <td className="py-2 px-4 border-b">
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={event.title}
+                                    onChange={handleInputChange}
+                                    className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                                />
+                            ) : (
+                                event.title
+                            )}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                            {isEditing ? (
+                                <textarea
+                                    name="description"
+                                    value={event.description}
+                                    onChange={handleInputChange}
+                                    className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                                />
+                            ) : (
+                                event.description
+                            )}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                            {isEditing ? (
+                                <input
+                                    type="date"
+                                    name="event_date"
+                                    value={event.event_date}
+                                    onChange={handleInputChange}
+                                    className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                                />
+                            ) : (
+                                event.event_date
+                            )}
+                        </td>
+                        <td className="py-2 px-4 border-b">
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={event.location}
+                                    onChange={handleInputChange}
+                                    className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                                />
+                            ) : (
+                                event.location
+                            )}
+                        </td>
+                    </>
+                )}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onSaveEdit={handleSaveEdit}
+                onCancelEdit={handleCancelEdit}
+                editingRow={editingEvent}
+            />
+            <div className="flex justify-between items-center mt-8">
                 <button
-                    className="bg-gray-500 text-white px-3 py-1 rounded"
+                    className="bg-yellow-500 text-black px-6 py-3 rounded-full shadow-lg hover:bg-yellow-600 transition"
                     disabled={page === 1}
                     onClick={() => setPage(page - 1)}
                 >
                     Previous
                 </button>
-                <span>Page {page}</span>
+                <span className="text-gray-400 text-xl font-semibold">Page {page}</span>
                 <button
-                    className="bg-gray-500 text-white px-3 py-1 rounded"
+                    className="bg-yellow-500 text-black px-6 py-3 rounded-full shadow-lg hover:bg-yellow-600 transition"
                     onClick={() => setPage(page + 1)}
                 >
                     Next

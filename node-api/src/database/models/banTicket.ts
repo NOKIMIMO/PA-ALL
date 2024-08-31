@@ -1,4 +1,3 @@
-import { Message } from './../../../../react-app/src/services/MessageService';
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from './user';
 

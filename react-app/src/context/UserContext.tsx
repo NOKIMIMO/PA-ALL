@@ -11,6 +11,7 @@ type User = {
 
 type UserContextType = {
   user: User | null;
+  loading: boolean;
   setUser: (user: User | null) => void;
   fetchUserData: () => void;
 };
@@ -19,6 +20,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchUserData = async () => {
     try {
@@ -35,6 +37,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Error fetching user data:', error);
       localStorage.removeItem('token');
       setUser(null);
+    }finally {
+      setLoading(false);
     }
   };
 
@@ -43,7 +47,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, fetchUserData }}>
+    <UserContext.Provider value={{ user, loading, setUser, fetchUserData }}>
       {children}
     </UserContext.Provider>
   );

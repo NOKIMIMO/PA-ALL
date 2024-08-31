@@ -23,18 +23,20 @@ export default class EventUseCase {
         if (!event) {
             throw new CustomError(404,'Event not found')
         }
-        const eventManager = await eventManagerRepository.findOneBy({ eventId: eventId, userId: currentUserId })
-        if (!eventManager) {
-            const userRepo = this.db.getRepository(User)
-            const user = await userRepo.findOneBy({ id: currentUserId })
-            if (!user) {
-                throw new CustomError(404,'User not found')
-            }
-            if (user.role !== user_access_type.SUPER_ADMIN, user.role !== user_access_type.ADMIN) {
-                throw new CustomError(401,'User not allowed to remove event manager')
-            }
+        const userRepo = this.db.getRepository(User)
+        const user = await userRepo.findOneBy({ id: currentUserId })
+        if (!user) {
+            throw new CustomError(404,'User not found')
         }
-        await eventManagerRepository.delete({ eventId: eventId, userId: userId })
+        if (user.role !== user_access_type.SUPER_ADMIN, user.role !== user_access_type.ADMIN) {
+            throw new CustomError(401,'User not allowed to remove event manager')
+        }
+        const eventManagerToDelete = await eventManagerRepository.findOneBy({ eventId: eventId, userId: userId })
+        if (!eventManagerToDelete) {
+            throw new CustomError(404,'Event manager not found')
+        }
+        
+        await eventManagerRepository.remove(eventManagerToDelete)
     }
 
     async listEventWhereTaskAssigned(userId: number): Promise<{ events: Event[]; totalCount: number; }> {
@@ -133,7 +135,7 @@ export default class EventUseCase {
         return { events, totalCount }
     }
 
-    async addMannagerToEvent(eventId: number, userId: number, currentUserId: number): Promise<void> {
+    async addMannagerToEvent(eventId: number, userIds: number[], currentUserId: number): Promise<void> {
         const eventManagerRepository = this.db.getRepository(EventManager)
         const eventRepository = this.db.getRepository(Event)
         const event = await eventRepository.findOneBy({ id: eventId })
@@ -151,9 +153,19 @@ export default class EventUseCase {
                 throw new CustomError(401,'User not allowed to remove event manager')
             }
         }
-        const newEventManager = eventManagerRepository.create({ eventId, userId })
-        await eventManagerRepository.save(newEventManager)
-
+        for(const userId of userIds){
+            const alreadyExists = await eventManagerRepository.findOneBy({ eventId: eventId, userId: userId })
+            if (alreadyExists) {
+                throw new CustomError(401,'User already added as event manager')
+            }
+            const userRepo = this.db.getRepository(User)
+            const user = await userRepo.findOneBy({ id: userId })
+            if (!user) {
+                throw new CustomError(404,'User not found')
+            }
+            const newEventManager = eventManagerRepository.create({ eventId: eventId, userId: userId })
+            await eventManagerRepository.save(newEventManager)
+        }
 
     }
 
@@ -165,7 +177,9 @@ export default class EventUseCase {
         if(data.event_date < today){
             throw new CustomError(401,'Event date must be in the future')
         }
-    
+        if(data.max_participant && data.max_participant <5){
+            throw new CustomError(401,'Max participant must be greater than 5 if specified')
+        }
         const newEvent = eventRepository.create({ ...data, user: { id: userid } });
         const newEventReturn = await eventRepository.save(newEvent);
         const eventMannagerRepository = this.db.getRepository(EventManager);
@@ -208,6 +222,12 @@ export default class EventUseCase {
         }
         if (data.data_access_type) {
             eventFind.data_access_type = data.data_access_type
+        }
+        if (data.max_participant) {
+            if (data.max_participant < 5) {
+                throw new CustomError(401,'Max participant must be greater than 5 if specified')
+            }
+            eventFind.max_participant = data.max_participant
         }
         const updatedEvent = await repo.save(eventFind)
         return updatedEvent
@@ -297,13 +317,25 @@ export default class EventUseCase {
         return string
     }
 
-    async listEventParticipants(data: selectEventRequest): Promise<User[]> {
+    async listEventParticipants(data: selectEventRequest): Promise<UserResponse[]> {
         const repo = this.db.getRepository(UsersEvents)
         const userRepo = this.db.getRepository(User)
         const userEvents = await repo.find({ where: { eventid: data.eventId } })
         const userIds = userEvents.map(userEvent => userEvent.userid);
         const users = await userRepo.find({ where: { id: In(userIds) } });
-        return users
+        const userResponse = users.map(user => {
+            return {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                lastname: user.lastname,
+                firstname: user.firstname,
+                active: user.active,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
+        })
+        return userResponse
     }
 
 }

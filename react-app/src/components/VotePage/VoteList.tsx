@@ -2,11 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import VoteService from '../../services/VoteService';
 import CreateVote from './CreateVote';
+import { useUser } from '../../context/UserContext';
+import { user_access_type } from '../../commons/user_access_type';
 
 const VoteList: React.FC = () => {
     const [votes, setVotes] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const {user} = useUser();
+
+    const isAdmin = user?.role === user_access_type.ADMIN || user?.role === user_access_type.SUPER_ADMIN;
 
     useEffect(() => {
         fetchVotes();
@@ -16,7 +21,7 @@ const VoteList: React.FC = () => {
         setLoading(true);
         try {
             const voteService = VoteService;
-            const data = await voteService.getVotes();
+            const data = await voteService.getVotes({});
             setVotes(data || []); // Ensure votes is an array
         } catch (error: any) {
             setError(error.message || 'An unknown error occurred');
@@ -45,7 +50,7 @@ const VoteList: React.FC = () => {
         <div className="max-w-4xl mx-auto p-4">
             <h1 className="text-2xl font-bold text-center mb-4">Vote List</h1>
             
-            {localStorage.getItem('role') === "admin" ? ( <CreateVote onCreateVote={handleCreateVote} />):(<div></div>)}
+            {isAdmin ? ( <CreateVote onCreateVote={handleCreateVote} onVoteCreated={() => {}}/>):(<div></div>)}
             {votes.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4 mt-4">
                     {votes.map(vote => (

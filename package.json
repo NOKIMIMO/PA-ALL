@@ -6,13 +6,12 @@
         "start": "concurrently \"npm run start --prefix react-app\" \"npm run start --prefix node-api\"",
         "start:dev": "concurrently \"npm run dev --prefix react-app\" \"npm run start:dev --prefix node-api\"",
         "build": "npm run build --prefix react-app && npm run build --prefix node-api",
-        "lint": "npm run lint --prefix react-app"
+        "lint": "npm run lint --prefix react-app",
+        "install:all": "npm install --prefix react-app && npm install --prefix node-api"
     },
     "devDependencies": {
-        "@types/nodemailer": "^6.4.15",
         "concurrently": "^8.2.2"
     },
     "dependencies": {
-        "nodemailer": "^6.9.14"
     }
 }

@@ -13,13 +13,14 @@ import path from 'path';
 import { downloadFileValidation} from "../Validators/fileValidator";
 import { saveToTemporaryFile } from "../common/file/fileDLHandler";
 import { readFile } from 'fs/promises';
+import crypto from 'crypto';
 
 
 
 const upload = multer({ dest: process.env.FILE_STORAGE_PATH });
 
 const router = Router();
-router.get('/update/app',
+router.get('/app/update',
     async (req: Request, res: Response): Promise<void> => {
         try {
             const filePath = path.resolve(process.env.APP_STORAGE_PATH??'');
@@ -40,6 +41,20 @@ router.get('/update/app',
         }
     }
 );
+router.get('/app/checksum',
+    async (req: Request, res: Response): Promise<void> => {
+        try {
+            const filePath = path.resolve(process.env.APP_STORAGE_PATH??'');
+            const fileBuffer = await fs.promises.readFile(filePath);
+            const hashSum = crypto.createHash('sha256');
+            hashSum.update(fileBuffer);
+            const hex = hashSum.digest('hex');
+            
+            res.send({ checksum: hex });
+        } catch (err) {
+
+        }
+    });
 router.post('/',
     authMiddleware,
     upload.single('file'),

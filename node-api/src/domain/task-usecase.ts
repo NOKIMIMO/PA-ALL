@@ -91,7 +91,7 @@ export class TaskUseCase {
                 if (!taskParent) {
                     throw new CustomError(404,'Task not found');
                 }
-                taskToUpdate.priority = taskParent;
+                taskToUpdate.priority;
                 taskToUpdate.priorityId = task.priority;
             }
 

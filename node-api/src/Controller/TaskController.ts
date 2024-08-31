@@ -1,10 +1,6 @@
 import { Request, Response, Router } from 'express';
 import {  selectItemValidation } from '../Validators/commonValidator';
-import { generateValidationErrorMessage } from '../common/generate-validation-msg';
 import { db } from '../database/db';
-import { authMiddleware } from '../common/middleware/auth-middleware';
-import { accessMiddleware } from '../common/middleware/access-middleware';
-import { user_access_type } from '../common/enum/access-type';
 import { validatorMiddleware } from '../common/middleware/validator-middleware';
 import { listTaskValidation, taskAssignMultipleValidation, taskAssignValidation, taskCreateValidation, taskSelectOneValidation, taskUpdateValidation } from '../Validators/taskValidator';
 import { JwtPayload } from 'jsonwebtoken';
