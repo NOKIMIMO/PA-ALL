@@ -29,8 +29,11 @@ const UserTable: React.FC = () => {
             if (userData instanceof CustomError) {
                 setError(userData.message);
             } else if (userData && Array.isArray(userData.users)) {
-                const activeUsers = userData.users.filter((user: User) => user.active);
-                setUsers(activeUsers);
+                const updatedUsers = userData.users.map((lookedAtUser : User) => ({
+                    ...lookedAtUser,
+                    disabled: lookedAtUser.id === user?.id // Mark current user as disabled
+                }));
+                setUsers(updatedUsers);
                 setError(null);
             } else {
                 setError('Unexpected data format');
@@ -82,7 +85,33 @@ const UserTable: React.FC = () => {
         }
     };
 
-    const headers = ['ID', 'Email', 'Role'];
+    const handleBan = async (id: number) => {
+        try {
+            // Implement the ban functionality here
+            console.log(`Ban user with id: ${id}`);
+            // You might want to call a UserService method to handle the ban action
+            await UserService.banUserById(id.toString());
+
+            fetchUsers();
+        } catch (err) {
+            setError((err as Error).message);
+        }
+    };
+
+    const handleUnBan = async (id: number) => {
+        try {
+            // Implement the unban functionality here
+            console.log(`Unban user with id: ${id}`);
+            // You might want to call a UserService method to handle the unban action
+            await UserService.unBanUserById(id.toString());
+
+            fetchUsers();
+        } catch (err) {
+            setError((err as Error).message);
+        }
+    };
+
+    const headers = ['ID', 'Email', 'Role','Status'];
 
     return (
         <div className="container mx-auto p-8 bg-black text-white rounded-xl shadow-2xl">
@@ -124,13 +153,20 @@ const UserTable: React.FC = () => {
                                 user.role
                             )}
                         </td>
-                       
+                        <td className="py-2 px-4 border-b">
+                            {user.active ? 'Active' : 'Inactive'}
+                        </td>
                     </>
                 )}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onSaveEdit={handleSaveEdit}
                 onCancelEdit={handleCancelEdit}
+                onBan={{
+                    banned: false, // Will be handled in GenericTable based on row data
+                    handleBan,
+                    handleUnBan
+                }}
                 editingRow={editingUser}
             />
             <div className="flex justify-between items-center mt-8">
@@ -152,5 +188,6 @@ const UserTable: React.FC = () => {
         </div>
     );
 };
+
 
 export default UserTable;

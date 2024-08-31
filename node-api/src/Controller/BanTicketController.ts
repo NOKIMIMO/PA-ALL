@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import e, { Request, Response, Router } from 'express';
 import { listItemValidation, selectItemValidation } from '../Validators/commonValidator';
 import { generateValidationErrorMessage } from '../common/generate-validation-msg';
 import { UserUseCase } from '../domain/user-usecase';
@@ -47,9 +47,11 @@ router.post('/',
             res.json(banTicket);
         } catch (err) {
             if (err instanceof CustomError) {
+                console.log(err)
                 res.status(err.code).send({error: err.message});
             } else {
-                res.status(500).send({ error: 'Internal error' });
+                console.log(err)
+                res.status(500).send({ error: 'Internal error'});
             }
         }
     })
@@ -58,6 +60,7 @@ router.delete('/:itemId',
     authMiddleware,
     async (req: Request, res: Response): Promise<void> => {
         const banTicketId = parseInt(req.params.itemId);
+        console
         try {
             const banTicketUseCase = new BanTicketUseCase(db);
             await banTicketUseCase.unbanUser(banTicketId);
