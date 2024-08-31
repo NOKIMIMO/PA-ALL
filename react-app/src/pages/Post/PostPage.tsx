@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import CommentList from '../../components/PostPage/CommentList';
 import { PostService } from '../../services/PostService'; // Ajustez le chemin selon votre projet
+import { useUser } from '../../context/UserContext';
 
 interface Post {
   id: string;
@@ -15,6 +16,7 @@ const PostPage: React.FC = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const {user} = useUser();
 
   useEffect(() => {
     const fetchPost = async () => {

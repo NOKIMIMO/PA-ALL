@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDa
 import { User } from "./user";
 import { Task } from "./task";
 import { EventManager } from "./eventMannager";
+import { event_category_animal, event_category_event } from "../../common/enum/event-category";
 
 @Entity()
 export class Event {
@@ -10,6 +11,12 @@ export class Event {
 
     @Column()
     title: string;
+
+    @Column({ default: event_category_event.MEETING })
+    category_event: event_category_event;
+
+    @Column({ default: event_category_animal.ALL })
+    category_animal: event_category_animal;
 
     //creator
     @Column({ name: "userId" })
@@ -37,6 +44,9 @@ export class Event {
     @Column({ default: true })
     active: boolean;
 
+    @Column({nullable: true})
+    max_participant: number;
+
     @OneToMany(()=> EventManager, eventManager => eventManager.event, {cascade: true})
     eventManager: EventManager[];
 
@@ -49,7 +59,8 @@ export class Event {
     constructor(id: number, title: string, userId: number,
          user: User, description: string, data_access_type: string,
           event_date: Date, location: string, createdAt: Date, updatedAt: Date,
-           active: boolean, tasks: Task[], eventManager: EventManager[]) {
+           active: boolean, tasks: Task[], eventManager: EventManager[], max_participant: number,
+            category_event: event_category_event, category_animal: event_category_animal) {
         this.id = id;
         this.title = title;
         this.user = user;
@@ -63,5 +74,8 @@ export class Event {
         this.active = active;
         this.tasks = tasks;
         this.eventManager = eventManager;
+        this.max_participant = max_participant;
+        this.category_event = category_event;
+        this.category_animal = category_animal;
     }
 }

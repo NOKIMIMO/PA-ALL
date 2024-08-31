@@ -35,9 +35,9 @@ router.post('/',
     })
 router.get('/',
     authMiddleware,
-    validatorMiddleware(listItemValidation, 'body'),
+    validatorMiddleware(listItemValidation, 'query'),
     async (req: Request, res: Response): Promise<void> => {
-        const listItemRequest = req.body;
+        const listItemRequest = req.query;
         try {
             const EventUsecase = new EventUseCase(db);
             const listEvents = await EventUsecase.listEvents({ ...listItemRequest });

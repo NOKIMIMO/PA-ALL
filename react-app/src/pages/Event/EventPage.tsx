@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { EventService } from '../../services/EventService';
 import UserService from '../../services/UserService';
+import { useUser } from '../../context/UserContext';
+import { user_access_type } from '../../commons/user_access_type';
 
 export default function EventPage() {
     const { eventId } = useParams<{ eventId: string }>();
@@ -13,7 +15,9 @@ export default function EventPage() {
     const [isParticipating, setIsParticipating] = useState<boolean>(false);
     const [totalMembers, setTotalMembers] = useState<number>(0);
     const [minParticipants, setMinParticipants] = useState<number>(0);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const { user } = useUser();
+
+    const isAdmin = user?.role === user_access_type.ADMIN || user?.role === user_access_type.SUPER_ADMIN;
 
     const eventService = new EventService();
     const userService = UserService;
@@ -64,14 +68,8 @@ export default function EventPage() {
             }
         };
 
-        const checkAdminRole = () => {
-            const role = localStorage.getItem('role');
-            setIsAdmin(role === 'admin');
-        };
-
         fetchEvent();
         fetchParticipants();
-        checkAdminRole();
     }, [eventId]);
 
     const handleJoinEvent = async () => {
@@ -102,6 +100,10 @@ export default function EventPage() {
         navigate('/create-event');
     };
 
+    const handleGoBack = () => {
+        navigate(-1); // Navigate back to the last page visited
+    };
+
     if (loading) {
         return <div className="text-center mt-5">Loading...</div>;
     }
@@ -116,6 +118,12 @@ export default function EventPage() {
         <div className="container mx-auto mt-10 p-5">
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 <div className="p-5 bg-gray-100">
+                    <button 
+                        onClick={handleGoBack} 
+                        className="text-gray-500 hover:text-gray-700 mb-3 underline flex items-center"
+                    >
+                        ← Back
+                    </button>
                     <h2 className="text-3xl font-bold text-gray-800 mb-3">{event.title}</h2>
                     {event.isAG && (
                         <div className="text-red-500 font-semibold">

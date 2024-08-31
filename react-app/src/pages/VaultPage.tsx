@@ -212,77 +212,81 @@ export default function VaultPage() {
     };
 
     return (
-        <div>
-            <div className="grid grid-cols-12 min-h-screen">
-                <div className="col-span-3 bg-base-200">
-                    <ul className="menu menu-xs rounded-lg w-full h-full">
-                        {folders.map((folder, index) => (
-                            <li key={folder.id}>
-                                <Folder
-                                    id={folder.id}
-                                    name={folder.name}
-                                    files={folder.files}
-                                    isOpen={true}
-                                    onToggle={() => toggleFolder(index)}
-                                    onFileClick={handleFileClick}
-                                    onAddFile={handleAddFile}
-                                    onDeleteFile={handleDeleteFolder}
-                                    onRenameFile={handleRenameFile}
-                                />
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="col-span-9 bg-gray-100">
-                    <div className="grid grid-cols-9 gap-4 h-full">
-                        <div className="col-span-8">
-                            {showPreview && selectedFile ? (
-                                <div className="p-4 border border-gray-300 rounded-lg h-full">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h1 className="text-xl font-bold">{selectedFile.name}</h1>
-                                        <HiX onClick={handleClearSelection} />
-                                    </div>
-                                    <PreviewFile
-                                        selectedFile={selectedFile}
-                                    />
-                                    {["pdf", "plain", "png", "jpg"].indexOf(selectedFile.type) === -1 && (
-                                        <div className="flex items-center justify-center w-full h-full">
-                                            <HiQuestionMarkCircle className="text-6xl text-gray-400" />
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center h-full">
-                                    <p className="text-gray-500">Select a file to preview</p>
-                                </div>
-                            )}
+        <div className="min-h-screen bg-gradient-to-r from-blue-50 to-indigo-100 flex flex-col">
+          <div className="flex-grow flex flex-col justify-between p-6">
+            <div className="grid grid-cols-12 gap-6 flex-grow" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+              {/* Sidebar */}
+              <div className="col-span-3 bg-base-300 p-6 rounded-xl shadow-2xl flex flex-col justify-between">
+                <ul className="menu menu-sm rounded-xl flex-grow overflow-y-auto">
+                  {folders.map((folder, index) => (
+                    <li key={folder.id}>
+                      <Folder
+                        id={folder.id}
+                        name={folder.name}
+                        files={folder.files}
+                        isOpen={true}
+                        onToggle={() => toggleFolder(index)}
+                        onFileClick={handleFileClick}
+                        onAddFile={handleAddFile}
+                        onDeleteFile={handleDeleteFolder}
+                        onRenameFile={handleRenameFile}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+      
+              {/* Main Content */}
+              <div className="col-span-9 bg-white p-8 rounded-xl shadow-2xl flex flex-col justify-between">
+                <div className="grid grid-cols-9 gap-8 flex-grow overflow-y-auto">
+                  {/* File Preview */}
+                  <div className="col-span-8 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-300 rounded-xl p-8 shadow-lg flex flex-col justify-between">
+                    {showPreview && selectedFile ? (
+                      <div className="flex flex-col h-full">
+                        <div className="flex justify-between items-center mb-6">
+                          <h1 className="text-3xl font-bold text-gray-900">{selectedFile.name}</h1>
+                          <HiX className="text-gray-800 cursor-pointer hover:text-gray-900 transition-colors duration-300" onClick={handleClearSelection} />
                         </div>
-                        <div className="col-span-1">
-                            <div className="flex flex-col justify-center h-full">
-                                <DLButton selectedFile={selectedFile} handleFileDownload={handleFileDownload} />
-                                <DeleteButton selectedFile={selectedFile} handleDeleteFolder={handleDeleteFolder} />
-                                <CryptButton selectedFile={selectedFile} handleCryptFile={handleCryptFile}></CryptButton>
-                            </div>
-                        </div>
-                    </div>
+                        <PreviewFile selectedFile={selectedFile} />
+                        {["pdf", "plain", "png", "jpg"].indexOf(selectedFile.type) === -1 && (
+                          <div className="flex items-center justify-center w-full h-full">
+                            <HiQuestionMarkCircle className="text-8xl text-gray-600" />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-gray-700 text-lg">Select a file to preview</p>
+                      </div>
+                    )}
+                  </div>
+      
+                  {/* Action Buttons */}
+                  <div className="col-span-1 flex flex-col justify-between">
+                    <DLButton selectedFile={selectedFile} handleFileDownload={handleFileDownload} />
+                    <DeleteButton selectedFile={selectedFile} handleDeleteFolder={handleDeleteFolder} />
+                    <CryptButton selectedFile={selectedFile} handleCryptFile={handleCryptFile} />
+                  </div>
                 </div>
+              </div>
             </div>
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSubmit={handleModalSubmit}
+          </div>
+      
+          {/* Modals */}
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={handleModalSubmit}
+          />
+          {folders.length > 0 && folders[0].files.length > 0 && (
+            <FileRenameModal
+              isOpen={isRenameModalOpen}
+              oldName={findFileById(selectToRenameFile!, folders)?.name || ''}
+              onClose={() => setIsRenameModalOpen(false)}
+              onSubmit={handleModalRenameSubmit}
             />
-            {folders.length > 0 && folders[0].files.length > 0 && (
-                <FileRenameModal
-                    isOpen={isRenameModalOpen}
-                    oldName={findFileById(selectToRenameFile!, folders)?.name || ''}
-                    onClose={() => setIsRenameModalOpen(false)}
-                    onSubmit={handleModalRenameSubmit}
-                />
-            )}
-
-
-
+          )}
         </div>
-    );
+      );
+      
 }

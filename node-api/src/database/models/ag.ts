@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./user";
 import { AgTask } from "./agTask";
+import { ag_category } from "../../common/enum/ag-category";
 
 
 @Entity()
@@ -26,9 +27,18 @@ export class Ag {
     @Column()
     mannager_id: number;
 
+    @Column({ default: ag_category.GENERAL })
+    category: ag_category;
+
     @OneToMany(() => AgTask, agTask => agTask.ag, {cascade: true})
     agTask: AgTask[];
 
+    @Column({ nullable: true })
+    vote_id: number;
+
+    @Column({ nullable: true })
+    ban_appeal_id: number;
+    
     @ManyToOne(() => User, user => user.agMannager)
     @JoinColumn({ name: 'mannager_id' })
     user: User;
@@ -40,7 +50,8 @@ export class Ag {
     updatedAt: Date;
 
     constructor(id: number, title: string, description: string, ag_date: Date, location: string, minimum_participants: number,
-        createdAt : Date, updatedAt: Date, mannager_id: number, user: User, agTask: AgTask[]
+        createdAt : Date, updatedAt: Date, mannager_id: number, user: User, agTask: AgTask[], category: ag_category,
+        vote_id: number, ban_appeal_id: number
     ) {
         this.id = id;
         this.title = title;
@@ -53,6 +64,9 @@ export class Ag {
         this.mannager_id = mannager_id;
         this.user = user;    
         this.agTask = agTask;
+        this.category = category;
+        this.vote_id = vote_id;
+        this.ban_appeal_id = ban_appeal_id;
     }
 
 }

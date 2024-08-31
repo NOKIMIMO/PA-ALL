@@ -3,6 +3,9 @@ import { EventService } from "../services/EventService";
 import { Card } from "../components/Card";
 import EditEvent from "../components/EventPage/EditEvent";
 import CreateEvent from "../components/EventPage/CreateEvent";
+import { user_access_type } from "../commons/user_access_type";
+import { useUser } from '../context/UserContext';
+import Loading from "../components/Loading";
 
 interface Event {
   id: number;
@@ -11,7 +14,6 @@ interface Event {
   event_date: string;
   location: string;
   userId: number;
-  isAG: boolean;
 }
 
 interface EventsResponse {
@@ -28,6 +30,7 @@ export default function EventListPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [creatingEvent, setCreatingEvent] = useState<boolean>(false);
+  const { user } = useUser();
   const [isAdmin, setIsAdmin] = useState<boolean>(false); // Add state for admin check
   const eventService = new EventService();
 
@@ -45,8 +48,7 @@ export default function EventListPage() {
   }, []);
 
   const checkAdminRole = () => {
-    const role = localStorage.getItem('role');
-    setIsAdmin(role === 'admin');
+    setIsAdmin(user?.role === user_access_type.ADMIN || user?.role === user_access_type.SUPER_ADMIN);
   };
 
   const fetchEvents = async () => {
@@ -107,10 +109,8 @@ export default function EventListPage() {
 
   const filteredEvents = filterEventsByDate(events, startDate, endDate);
   const finalFilteredEvents = filterEventsBySearch(filteredEvents, searchQuery);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <Loading/>
+  
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -187,7 +187,6 @@ export default function EventListPage() {
                   showActions={isAdmin} // Show edit and delete actions only if admin
                   onEdit={() => setEditingEvent(event)}
                   onDelete={() => handleDelete(event.id)}
-                  isAG={event.isAG}
                 />
               )
             ))

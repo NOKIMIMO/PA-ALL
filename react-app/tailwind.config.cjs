@@ -3,7 +3,21 @@ module.exports = {
 		extend: {
 			colors: {
 				"card": "oklch(var(--card) / <alpha-value>)",
-			  },
+			},
+			keyframes: {
+				'spin-wool': {
+					'0%': { transform: 'rotate(0deg)' },
+					'100%': { transform: 'rotate(360deg)' },
+				},
+				'cat-chase': {
+					'0%, 100%': { transform: 'translateX(0)' },
+					'50%': { transform: 'translateX(30px)' },
+				},
+			},
+			animation: {
+				'spin-wool': 'spin-wool 2s linear infinite',
+				'cat-chase': 'cat-chase 1s ease-in-out infinite',
+			},
 		},
 		container: {
 			center: true,

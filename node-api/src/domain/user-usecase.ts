@@ -44,9 +44,8 @@ export class UserUseCase {
         const query = this.db.createQueryBuilder(User, 'user')
             .where("user.active = :active", { active: true }); // Ajoutez cette condition pour filtrer les utilisateurs inactifs
 
-        console.log(filter)
         if (filter.role) {
-            query.andWhere("user.role = :role", { role: filter.role.toUpperCase() });
+            query.andWhere("user.role = :role", { role: filter.role });
         }
         if (filter.limit) {
             query.limit(filter.limit);
@@ -114,6 +113,13 @@ export class UserUseCase {
         const isValid = await compare(password, user.password);
         if (!isValid) {
             return null
+        }
+        //check license expiry
+        const licenseRepo = db.getRepository(License)
+        const license = await licenseRepo.findOneBy({ userId: user.id, active: true })
+        if (license && license.expirationDate < new Date()) {
+            license.active = false
+            await licenseRepo.save(license)
         }
         //check with ban tickets
         const userResponse = {
