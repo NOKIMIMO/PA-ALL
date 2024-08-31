@@ -74,15 +74,23 @@ export default class AgUseCase {
         return { ags, totalCount }
     }
     async listAgsWhereTaskAssigned(userId: number): Promise<{ ags: Ag[]; totalCount: number; }> {
-        const agRepo = this.db.getRepository(Ag)
-        const agTaskRepo = this.db.getRepository(AgTask)
-        const userAgTaskRepo = this.db.getRepository(UserAgTask);
-        const taskAgs = await userAgTaskRepo.find({ where: { userId: userId } })
+        const userRepository = this.db.getRepository(User)
+        const user = await userRepository.findOneBy({ id: userId })
+        if (!user) {
+            throw new CustomError(404,'User not found')
+        }
+        const userTaskRepository = this.db.getRepository(UserAgTask);
+        const UserTaks = await userTaskRepository.findBy({ userId: userId });
 
-        const agTasks = await agTaskRepo.find({ where: { id: In(taskAgs.map(t => t.agTaskId)) } })
+        const taskRepository = this.db.getRepository(AgTask);
+        const tasksIds = UserTaks.map((userTask) => userTask.agTaskId);
+        const tasks = await taskRepository.findBy({ id: In(tasksIds) });
 
-        const ag = await agRepo.find({ where: { id: In(agTasks.map(t => t.id)) } })
-        return { ags: ag, totalCount: ag.length }
+        const agRepository = this.db.getRepository(Ag);
+        const agIds = tasks.map((task) => task.agId);
+        const ags = await agRepository.findBy({ id: In(agIds) });
+    
+        return { ags, totalCount: ags.length }
 
     }
 
