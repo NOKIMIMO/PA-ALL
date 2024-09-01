@@ -12,7 +12,6 @@ export default function Burger({ role }: BurgerProps) {
     const isEmployee = role === user_access_type.EMPLOYEE;
     const isLicensed = role === user_access_type.LICENSED;
 
-    console.log(role);
     return (
         <div>
             <div className="dropdown">

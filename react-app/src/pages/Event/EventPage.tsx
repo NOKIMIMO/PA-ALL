@@ -43,7 +43,6 @@ export default function EventPage() {
                     location: eventData.location,
                     max_participant: eventData.max_participant,
                 });
-                console.log(eventData.max_participants);
                 if (eventData.isAG) {
                     let page = 1;
                     let users: any[] = [];
