@@ -140,6 +140,7 @@ export default function VaultPage() {
         //in the confirmation alert, force the user to rewrite the filename to confirm deletion
         const confirmation = prompt(`Please type the name of the file to confirm deletion: ${filename}`);
         if (confirmation !== filename) {
+          console.log(confirmation, filename);
             alert("File name does not match. Deletion cancelled.");
             return
         }

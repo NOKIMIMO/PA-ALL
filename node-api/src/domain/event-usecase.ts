@@ -238,6 +238,7 @@ export default class EventUseCase {
         const repo = this.db.getRepository(Event)
         const userRepo = this.db.getRepository(User)
         const event = await repo.findOneBy({ id: data.eventId })
+        const eventMannagerRepository = this.db.getRepository(EventManager)
         if (!event) {
             throw new CustomError(404,'Event not found')
         }
@@ -248,6 +249,9 @@ export default class EventUseCase {
         if ((user.role !== user_access_type.ADMIN && user.role !== user_access_type.SUPER_ADMIN) && user.id !== event.userId) {
             throw new CustomError(401,'User not allowed to delete this event')
         }
+        await eventMannagerRepository.delete({ eventId: data.eventId })
+        const eventTaskRepository = this.db.getRepository(Task)
+        await eventTaskRepository.delete({ eventId: data.eventId })
         await repo.remove(event)
     }
 

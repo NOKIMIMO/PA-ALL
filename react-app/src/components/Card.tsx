@@ -4,8 +4,8 @@ import { FaDog, FaCat, FaDove, FaDragon, FaStar, FaUsers, FaChalkboardTeacher, F
 interface CardProps {
     title: string;
     content: string;
-    category_animal: category_animal
-    category_event: category_event
+    category_animal: category_animal | null;
+    category_event: category_event | null;
     subtext: string | null;
     pageLink: string;
     showActions?: boolean | null;
@@ -70,8 +70,8 @@ export function Card({ title, content, category_animal, category_event, subtext,
     return (
         <div className="relative max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow">
             <a href="#">
-                {getCategoryAnimalIcon(category_animal)}
-                {getCategoryEventIcon(category_event)}
+                {category_animal && getCategoryAnimalIcon(category_animal)}
+                {category_event && getCategoryEventIcon(category_event)}
                 <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">{title}</h5>
             </a>
             <p className="mb-3 font-normal text-gray-700">{content}</p>

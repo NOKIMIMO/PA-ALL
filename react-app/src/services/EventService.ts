@@ -122,6 +122,7 @@ export class EventService implements IEventService {
 
         if (!response.ok) {
             const data = await response.text();
+            console.log(data);
             if (data) {
                 const error = JSON.parse(data);
                 throw new CustomError(response.status, error.message || 'Something went wrong');

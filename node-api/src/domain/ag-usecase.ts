@@ -13,6 +13,7 @@ import { UserResponse } from "../Validators/userValidator";
 import { UsersAgs } from "../database/models/users-ag";
 import { Vote } from "../database/models/vote";
 import { UserVote } from "../database/models/userVote";
+import { Option } from "../database/models/option";
 
 interface VoteInAgResponse {
     vote : Vote;
@@ -252,10 +253,23 @@ export default class AgUseCase {
             throw new CustomError(404, 'User not found')
         }
 
-        if (user.role !== user_access_type.ADMIN && user.role !== user_access_type.ADMIN) {
+        if (user.role !== user_access_type.ADMIN && user.role !== user_access_type.SUPER_ADMIN) {
             if (agFind.mannager_id !== userId) {
                 throw new CustomError(403, 'Forbidden')
             }
+        }
+        const agUserRepo = this.db.getRepository(UsersAgs)
+
+        await agUserRepo.delete({ agId: agId })
+        const agTaskRepo = this.db.getRepository(AgTask)
+        await agTaskRepo.delete({ agId: agId })
+        if (agFind.vote_id) {
+            const voteRepo = this.db.getRepository(Vote)
+            const userVoteRepo = this.db.getRepository(UserVote)
+            const optionVoteRepo = this.db.getRepository(Option)
+            await optionVoteRepo.delete({ voteId: agFind.vote_id })
+            await userVoteRepo.delete({ voteId: agFind.vote_id })
+            await voteRepo.delete({ id: agFind.vote_id })
         }
         await repo.remove(agFind)
         return true

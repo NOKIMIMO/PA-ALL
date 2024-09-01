@@ -174,7 +174,7 @@ router.get('/:agId',
 
 router.delete('/:agId',
     authMiddleware,
-    validatorMiddleware(selectAgValidation, 'body'),
+    validatorMiddleware(selectAgValidation, 'params'),
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
         const agId = parseInt(req.params.agId);
         try {
@@ -187,6 +187,7 @@ router.delete('/:agId',
             if (error instanceof CustomError) {
                 res.status(error.code).send({ error: error.message });
             } else {
+                console.log(error);
                 res.status(500);
                 res.json({ error: 'Internal error' });
             }

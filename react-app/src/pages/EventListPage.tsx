@@ -78,7 +78,6 @@ export default function EventListPage() {
     try {
       const data: EventsResponse = await eventService.getEvents(1, 10);
       if (data && data.events) {
-        console.log(data.events)
         setEvents(data.events);
       } else {
         setError("No events found");
