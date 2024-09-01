@@ -4,6 +4,44 @@ import { EventService } from '../../services/EventService';
 import UserService from '../../services/UserService';
 import { useUser } from '../../context/UserContext';
 import { user_access_type } from '../../commons/user_access_type';
+import { FaDog, FaCat, FaDove, FaDragon, FaStar, FaUsers, FaChalkboardTeacher, FaBusinessTime, FaRegCalendarAlt, FaQuestion } from 'react-icons/fa';
+import { event_category_event, event_category_animal } from "../../enum/event-category";
+
+// Function to get animal category icon
+const getCategoryAnimalIcon = (category: event_category_animal) => {
+    switch (category) {
+        case event_category_animal.ALL:
+            return <FaStar />;
+        case event_category_animal.DOG:
+            return <FaDog />;
+        case event_category_animal.CAT:
+            return <FaCat />;
+        case event_category_animal.BIRD:
+            return <FaDove />;
+        case event_category_animal.REPTILE:
+            return <FaDragon />;
+        default:
+            return <FaQuestion />;
+    }
+};
+
+// Function to get event category icon
+const getCategoryEventIcon = (category: event_category_event) => {
+    switch (category) {
+        case event_category_event.SHOW:
+            return <FaStar />;
+        case event_category_event.MEETING:
+            return <FaUsers />;
+        case event_category_event.WORKSHOP:
+            return <FaChalkboardTeacher />;
+        case event_category_event.SEMINAR:
+            return <FaBusinessTime />;
+        case event_category_event.CONFERENCE:
+            return <FaRegCalendarAlt />;
+        default:
+            return <FaQuestion />;
+    }
+};
 
 export default function EventPage() {
     const { eventId } = useParams<{ eventId: string }>();
@@ -23,6 +61,8 @@ export default function EventPage() {
         event_date: '',
         location: '',
         max_participant: 0,
+        category_animal: event_category_animal.ALL,
+        category_event: event_category_event.SHOW,
     });
 
     const isAdmin = user?.role === user_access_type.ADMIN || user?.role === user_access_type.SUPER_ADMIN;
@@ -42,7 +82,10 @@ export default function EventPage() {
                     event_date: eventData.event_date,
                     location: eventData.location,
                     max_participant: eventData.max_participant,
+                    category_animal: eventData.category_animal,
+                    category_event: eventData.category_event,
                 });
+
                 if (eventData.isAG) {
                     let page = 1;
                     let users: any[] = [];
@@ -118,7 +161,9 @@ export default function EventPage() {
                 description: formData.description,
                 event_date: formData.event_date,
                 location: formData.location,
-                max_participants: Number(formData.max_participant),
+                max_participant: Number(formData.max_participant),
+                category_animal: formData.category_animal,
+                category_event: formData.category_event,
             });
             setEvent({ ...event, ...formData });
             setIsEditing(false);
@@ -128,6 +173,11 @@ export default function EventPage() {
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
@@ -160,7 +210,11 @@ export default function EventPage() {
                     >
                         ← Back
                     </button>
-                    <h2 className="text-3xl font-bold text-gray-800 mb-3">{event.title}</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-3">
+                        {event.title}
+                        <span className="ml-2 text-xl">{getCategoryAnimalIcon(event.category_animal)}</span>
+                        <span className="ml-2 text-xl">{getCategoryEventIcon(event.category_event)}</span>
+                    </h2>
                     {event.isAG && (
                         <div className="text-red-500 font-semibold">
                             <svg className="inline w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -218,6 +272,36 @@ export default function EventPage() {
                             placeholder="Nombre maximal de participants"
                             className="border p-2 mb-3 w-full"
                         />
+                        <div className="mb-3">
+                            <label className="block mb-1">Catégorie d'animal:</label>
+                            <select
+                                name="category_animal"
+                                value={formData.category_animal}
+                                onChange={handleSelectChange}
+                                className="border p-2 w-full"
+                            >
+                                {Object.values(event_category_animal).map((cat) => (
+                                    <option key={cat} value={cat}>
+                                        {getCategoryAnimalIcon(cat)} {cat}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-3">
+                            <label className="block mb-1">Catégorie d'événement:</label>
+                            <select
+                                name="category_event"
+                                value={formData.category_event}
+                                onChange={handleSelectChange}
+                                className="border p-2 w-full"
+                            >
+                                {Object.values(event_category_event).map((eventCat) => (
+                                    <option key={eventCat} value={eventCat}>
+                                        {getCategoryEventIcon(eventCat)} {eventCat}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         <div className="flex justify-end">
                             <button onClick={handleCancelEdit} className="bg-gray-500 text-white px-4 py-2 rounded-md mr-2">
                                 Annuler
@@ -233,6 +317,8 @@ export default function EventPage() {
                         <p className="text-gray-600">Date: {new Date(event.event_date).toLocaleString()}</p>
                         <p className="text-gray-600">Lieu: {event.location}</p>
                         <p className="text-gray-600">Participants: {participants} / {event.max_participant}</p>
+                        <p className="text-gray-600">Catégorie d'animal: {getCategoryAnimalIcon(event.category_animal)}</p>
+                        <p className="text-gray-600">Catégorie d'événement: {getCategoryEventIcon(event.category_event)}</p>
                         {isBelowMinParticipants && <p className="text-red-500 font-semibold">Participants insuffisants pour l'assemblée générale.</p>}
                         <div className="mt-5">
                             {isParticipating ? (
