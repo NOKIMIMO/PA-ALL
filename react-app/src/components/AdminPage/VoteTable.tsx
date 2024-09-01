@@ -69,12 +69,12 @@ const VoteTable: React.FC = () => {
                 endDate: new Date(editingVote.endDate),
                 secondRoundEnabled: editingVote.secondRoundEnabled,
                 options: editingVote.options.map(option => ({
-                    id: option.id,  // Inclure l'ID de l'option pour la mise à jour
+                    id: option.id,
                     name: option.name,
                     voteCount: option.voteCount
                 }))
             };
-    
+
             try {
                 await VoteService.updateVote(editingVote.id, updateData);
                 setEditingVote(null);
@@ -84,16 +84,13 @@ const VoteTable: React.FC = () => {
             }
         }
     };
-    
-    
-    
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (editingVote) {
             setEditingVote({ ...editingVote, [e.target.name]: e.target.value });
         }
     };
-    
+
     const handleOptionChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         if (editingVote) {
             const updatedOptions = [...editingVote.options];
@@ -106,51 +103,51 @@ const VoteTable: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Vote Management</h1>
-            {error && <div className="bg-red-200 text-red-800 p-2 mb-4 rounded">{error}</div>}
-            <table className="min-w-full bg-white border border-gray-200">
-                <thead>
+        <div className="container mx-auto p-8 bg-black text-white rounded-xl shadow-2xl">
+            <h1 className="text-4xl font-bold mb-8 text-center">Vote Management</h1>
+            {error && <div className="bg-red-600 text-white p-4 mb-8 rounded-lg">{error}</div>}
+            <table className="min-w-full bg-gray-800 border border-gray-700 rounded-xl shadow-lg overflow-hidden">
+                <thead className='bg-gray-900 text-gray-400'>
                     <tr>
-                        <th className="py-2 px-4 border-b">ID</th>
-                        <th className="py-2 px-4 border-b">Title</th>
-                        <th className="py-2 px-4 border-b">Description</th>
-                        <th className="py-2 px-4 border-b">Options</th>
-                        <th className="py-2 px-4 border-b">End Date</th>
-                        <th className="py-2 px-4 border-b">Second Round Enabled</th>
-                        <th className="py-2 px-4 border-b">Actions</th>
+                        <th className="py-3 px-4 border-b border-gray-600">ID</th>
+                        <th className="py-3 px-4 border-b border-gray-600">Title</th>
+                        <th className="py-3 px-4 border-b border-gray-600">Description</th>
+                        <th className="py-3 px-4 border-b border-gray-600">Options</th>
+                        <th className="py-3 px-4 border-b border-gray-600">End Date</th>
+                        <th className="py-3 px-4 border-b border-gray-600">Second Round Enabled</th>
+                        <th className="py-3 px-4 border-b border-gray-600">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {votes.map((vote) => (
-                        <tr key={vote.id}>
-                            <td className="py-2 px-4 border-b">{vote.id}</td>
-                            <td className="py-2 px-4 border-b">
+                        <tr key={vote.id} className="hover:bg-gray-700">
+                            <td className="py-2 px-4 border-b border-gray-600">{vote.id}</td>
+                            <td className="py-2 px-4 border-b border-gray-600">
                                 {editingVote && editingVote.id === vote.id ? (
                                     <input
                                         type="text"
                                         name="title"
                                         value={editingVote.title}
                                         onChange={handleChange}
-                                        className="border px-2 py-1"
+                                        className="bg-gray-800 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
                                     />
                                 ) : (
                                     vote.title
                                 )}
                             </td>
-                            <td className="py-2 px-4 border-b">
+                            <td className="py-2 px-4 border-b border-gray-600">
                                 {editingVote && editingVote.id === vote.id ? (
                                     <textarea
                                         name="description"
                                         value={editingVote.description}
                                         onChange={handleChange}
-                                        className="border px-2 py-1"
+                                        className="bg-gray-800 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
                                     />
                                 ) : (
                                     vote.description
                                 )}
                             </td>
-                            <td className="py-2 px-4 border-b">
+                            <td className="py-2 px-4 border-b border-gray-600">
                                 {editingVote && editingVote.id === vote.id ? (
                                     <div>
                                         {editingVote.options.map((option, index) => (
@@ -159,7 +156,7 @@ const VoteTable: React.FC = () => {
                                                 type="text"
                                                 value={option.name}
                                                 onChange={(e) => handleOptionChange(index, e)}
-                                                className="border px-2 py-1 mb-1"
+                                                className="bg-gray-800 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2 mb-2"
                                             />
                                         ))}
                                     </div>
@@ -167,20 +164,20 @@ const VoteTable: React.FC = () => {
                                     vote.options.map(option => <div key={option.id}>{option.name}</div>)
                                 )}
                             </td>
-                            <td className="py-2 px-4 border-b">
+                            <td className="py-2 px-4 border-b border-gray-600">
                                 {editingVote && editingVote.id === vote.id ? (
                                     <input
                                         type="date"
                                         name="endDate"
                                         value={new Date(editingVote.endDate).toISOString().split('T')[0]}
                                         onChange={handleChange}
-                                        className="border px-2 py-1"
+                                        className="bg-gray-800 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
                                     />
                                 ) : (
                                     new Date(vote.endDate).toLocaleDateString()
                                 )}
                             </td>
-                            <td className="py-2 px-4 border-b">
+                            <td className="py-2 px-4 border-b border-gray-600">
                                 {editingVote && editingVote.id === vote.id ? (
                                     <input
                                         type="checkbox"
@@ -192,23 +189,23 @@ const VoteTable: React.FC = () => {
                                                 secondRoundEnabled: e.target.checked
                                             })
                                         }
-                                        className="mr-2"
+                                        className="bg-gray-800 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-2 py-1"
                                     />
                                 ) : (
                                     vote.secondRoundEnabled ? 'Yes' : 'No'
                                 )}
                             </td>
-                            <td className="py-2 px-4 border-b">
+                            <td className="py-2 px-4 border-b border-gray-600">
                                 {editingVote && editingVote.id === vote.id ? (
                                     <>
                                         <button
-                                            className="bg-green-500 text-white px-2 py-1 rounded mr-2"
+                                            className="bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600 transition"
                                             onClick={handleSaveEdit}
                                         >
                                             Save
                                         </button>
                                         <button
-                                            className="bg-gray-500 text-white px-2 py-1 rounded"
+                                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
                                             onClick={handleCancelEdit}
                                         >
                                             Cancel
@@ -217,13 +214,13 @@ const VoteTable: React.FC = () => {
                                 ) : (
                                     <>
                                         <button
-                                            className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
+                                            className="bg-blue-500 text-white px-4 py-2 rounded mr-2 hover:bg-blue-600 transition"
                                             onClick={() => handleEdit(vote)}
                                         >
                                             Edit
                                         </button>
                                         <button
-                                            className="bg-red-500 text-white px-2 py-1 rounded"
+                                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                                             onClick={() => handleDelete(vote.id)}
                                         >
                                             Delete
@@ -235,17 +232,17 @@ const VoteTable: React.FC = () => {
                     ))}
                 </tbody>
             </table>
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex justify-between items-center mt-8">
                 <button
-                    className="bg-gray-500 text-white px-3 py-1 rounded"
+                    className="bg-yellow-500 text-black px-6 py-3 rounded-full shadow-lg hover:bg-yellow-600 transition"
                     disabled={page === 1}
                     onClick={() => setPage(page - 1)}
                 >
                     Previous
                 </button>
-                <span>Page {page}</span>
+                <span className="text-gray-400 text-xl font-semibold">Page {page}</span>
                 <button
-                    className="bg-gray-500 text-white px-3 py-1 rounded"
+                    className="bg-yellow-500 text-black px-6 py-3 rounded-full shadow-lg hover:bg-yellow-600 transition"
                     onClick={() => setPage(page + 1)}
                 >
                     Next

@@ -210,13 +210,13 @@ router.delete('/:eventId',
             res.status(204);
             res.json();
         } catch (error) {
-            if ((error as Error).message === 'User not allowed to delete this event') {
-                res.status(403);
-                res.json({ error: 'Forbidden' });
-                return;
+            if (error instanceof CustomError) {
+                res.status(error.code).send({error : error.message});
+            } else {
+                console.log(error);
+                res.status(500);
+                res.json({ error: 'Internal error' });
             }
-            res.status(500);
-            res.json({ error: 'Internal error' });
         }
     })
 router.patch('/:eventId',

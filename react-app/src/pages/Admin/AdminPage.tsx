@@ -2,9 +2,9 @@ import { useState } from 'react';
 import PostTable from '../../components/AdminPage/PostTable';
 import UserTable from '../../components/AdminPage/UsersTable';
 import EventTable from '../../components/AdminPage/EventTable';
-import MessageListPage from '../MessageListPage';
 import VoteTable from '../../components/AdminPage/VoteTable';
 import TaskTable from '../../components/AdminPage/TaskTable';
+import BanTicketTable from '../../components/AdminPage/BanTicketTable';
 
 export default function AdminPage() {
     const [activeTab, setActiveTab] = useState('users');
@@ -17,8 +17,8 @@ export default function AdminPage() {
                 return <PostTable />;
             case 'events':
                 return <EventTable />;
-            case 'messages':
-                return <MessageListPage />;
+            case 'ban_tickets':
+                return <BanTicketTable />;
             case 'votes':
                 return <VoteTable />;
             case 'tasks':
@@ -51,10 +51,10 @@ export default function AdminPage() {
                     Events
                 </a>
                 <a
-                    className={`tab tab-lifted ${activeTab === 'messages' ? 'tab-active' : ''} hover:bg-purple-700`}
-                    onClick={() => setActiveTab('messages')}
+                    className={`tab tab-lifted ${activeTab === 'ban_tickets' ? 'tab-active' : ''} hover:bg-purple-700`}
+                    onClick={() => setActiveTab('ban_tickets')}
                 >
-                    Messages
+                    Ban tickets
                 </a>
                 <a
                     className={`tab tab-lifted ${activeTab === 'votes' ? 'tab-active' : ''} hover:bg-purple-700`}

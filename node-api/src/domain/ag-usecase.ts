@@ -13,6 +13,7 @@ import { UserResponse } from "../Validators/userValidator";
 import { UsersAgs } from "../database/models/users-ag";
 import { Vote } from "../database/models/vote";
 import { UserVote } from "../database/models/userVote";
+import { Option } from "../database/models/option";
 
 interface VoteInAgResponse {
     vote : Vote;
@@ -33,6 +34,8 @@ interface AgResponse {
     vote_info?: VoteInAgResponse;
     createdAt: Date;
     updatedAt: Date;
+    joined: boolean;
+    numberOfParticipants: number;
 }
 
 export default class AgUseCase {
@@ -160,6 +163,10 @@ export default class AgUseCase {
         if (!ag) {
             throw new CustomError(404, 'Ag not found')
         }
+        const agUserRepo = this.db.getRepository(UsersAgs)
+        const userAg = await agUserRepo.findOneBy({ agId: id, userid: userId })
+        const numberOfParticipants = await agUserRepo.countBy({ agId: id })
+        const joined = !!userAg
         const agResponse: AgResponse = {
             id: ag.id,
             title: ag.title,
@@ -171,7 +178,9 @@ export default class AgUseCase {
             vote_id: ag.vote_id,
             ban_appeal_id: ag.ban_appeal_id,
             createdAt: ag.createdAt,
-            updatedAt: ag.updatedAt
+            updatedAt: ag.updatedAt,
+            joined,
+            numberOfParticipants: numberOfParticipants
         }
         if (ag.vote_id) {
             const voteRepo = this.db.getRepository(Vote)
@@ -244,10 +253,23 @@ export default class AgUseCase {
             throw new CustomError(404, 'User not found')
         }
 
-        if (user.role !== user_access_type.ADMIN && user.role !== user_access_type.ADMIN) {
+        if (user.role !== user_access_type.ADMIN && user.role !== user_access_type.SUPER_ADMIN) {
             if (agFind.mannager_id !== userId) {
                 throw new CustomError(403, 'Forbidden')
             }
+        }
+        const agUserRepo = this.db.getRepository(UsersAgs)
+
+        await agUserRepo.delete({ agId: agId })
+        const agTaskRepo = this.db.getRepository(AgTask)
+        await agTaskRepo.delete({ agId: agId })
+        if (agFind.vote_id) {
+            const voteRepo = this.db.getRepository(Vote)
+            const userVoteRepo = this.db.getRepository(UserVote)
+            const optionVoteRepo = this.db.getRepository(Option)
+            await optionVoteRepo.delete({ voteId: agFind.vote_id })
+            await userVoteRepo.delete({ voteId: agFind.vote_id })
+            await voteRepo.delete({ id: agFind.vote_id })
         }
         await repo.remove(agFind)
         return true

@@ -13,6 +13,7 @@ interface Task {
   assignedTo?: string;
   status: string;
   eventId?: number;
+  active: boolean;
 }
 
 interface User {
@@ -200,140 +201,144 @@ const TaskTable: React.FC = () => {
       </div>
 
       <GenericTable<Task>
-        headers={headers}
-        rows={tasks}
-        renderRow={(task, isEditing, handleInputChange) => (
-          <>
-            <td className="py-2 px-4 border-b">{task.id}</td>
-            <td className="py-2 px-4 border-b">
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="title"
-                  value={task.title}
-                  onChange={handleInputChange}
-                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
-                />
-              ) : (
-                task.title
-              )}
-            </td>
-            <td className="py-2 px-4 border-b">
-              {isEditing ? (
-                <textarea
-                  name="description"
-                  value={task.description}
-                  onChange={handleInputChange}
-                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
-                />
-              ) : (
-                task.description
-              )}
-            </td>
-            <td className="py-2 px-4 border-b">
-              {isEditing ? (
-                <input
-                  type="date"
-                  name="dueDate"
-                  value={task.dueDate}
-                  onChange={handleInputChange}
-                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
-                />
-              ) : (
-                task.dueDate
-              )}
-            </td>
-            <td className="py-2 px-4 border-b">
-              {isEditing ? (
-                <select
-                  onChange={(e) => handleAssignTask(task.id, Number(e.target.value))}
-                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
-                >
-                  <option value="">Assign To</option>
-                  {users.map(user => (
-                    <option key={user.id} value={user.id}>
-                      {user.email}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                task.assignedTo || 'Unassigned'
-              )}
-            </td>
-            <td className="py-2 px-4 border-b">
-              {isEditing ? (
-                <select
-                  name="status"
-                  value={task.status}
-                  onChange={handleInputChange}
-                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                </select>
-              ) : (
-                task.status
-              )}
-            </td>
-            <td className="py-2 px-4 border-b">
-              {isEditing ? (
-                <select
-                  name="eventId"
-                  value={task.eventId || ''}
-                  onChange={handleInputChange}
-                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
-                >
-                  <option value="">Select Event</option>
-                  {events.map(event => (
-                    <option key={event.id} value={event.id}>
-                      {event.title}
-                    </option>
-                  ))}
-                </select>
-              ) : task.eventId ? (
-                events.find(event => event.id === task.eventId)?.title || 'No Event'
-              ) : (
-                'No Event'
-              )}
-            </td>
-            <td className="py-2 px-4 border-b">
-              {isEditing ? (
-                <>
-                  <button
-                    onClick={handleSaveEdit}
-                    className="bg-blue-500 text-black px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 transition"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancelEdit}
-                    className="bg-gray-500 text-black px-4 py-2 rounded-full shadow-lg hover:bg-gray-600 transition ml-2"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => handleEdit(task)}
-                    className="bg-yellow-500 text-black px-4 py-2 rounded-full shadow-lg hover:bg-yellow-600 transition"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(task.id)}
-                    className="bg-red-500 text-black px-4 py-2 rounded-full shadow-lg hover:bg-red-600 transition ml-2"
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </td>
-          </>
-        )}
-        isEditing={Boolean(editingTask)}
-        setEditingTask={setEditingTask}
+              headers={headers}
+              rows={tasks}
+              renderRow={(task, isEditing, handleInputChange) => (
+                  <>
+                      <td className="py-2 px-4 border-b">{task.id}</td>
+                      <td className="py-2 px-4 border-b">
+                          {isEditing ? (
+                              <input
+                                  type="text"
+                                  name="title"
+                                  value={task.title}
+                                  onChange={handleInputChange}
+                                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2" />
+                          ) : (
+                              task.title
+                          )}
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                          {isEditing ? (
+                              <textarea
+                                  name="description"
+                                  value={task.description}
+                                  onChange={handleInputChange}
+                                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2" />
+                          ) : (
+                              task.description
+                          )}
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                          {isEditing ? (
+                              <input
+                                  type="date"
+                                  name="dueDate"
+                                  value={task.dueDate}
+                                  onChange={handleInputChange}
+                                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2" />
+                          ) : (
+                              task.dueDate
+                          )}
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                          {isEditing ? (
+                              <select
+                                  onChange={(e) => handleAssignTask(task.id, Number(e.target.value))}
+                                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                              >
+                                  <option value="">Assign To</option>
+                                  {users.map(user => (
+                                      <option key={user.id} value={user.id}>
+                                          {user.email}
+                                      </option>
+                                  ))}
+                              </select>
+                          ) : (
+                              task.assignedTo || 'Unassigned'
+                          )}
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                          {isEditing ? (
+                              <select
+                                  name="status"
+                                  value={task.status}
+                                  onChange={handleInputChange}
+                                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                              >
+                                  <option value="pending">Pending</option>
+                                  <option value="in_progress">In Progress</option>
+                                  <option value="completed">Completed</option>
+                              </select>
+                          ) : (
+                              task.status
+                          )}
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                          {isEditing ? (
+                              <select
+                                  name="eventId"
+                                  value={task.eventId || ''}
+                                  onChange={handleInputChange}
+                                  className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
+                              >
+                                  <option value="">Select Event</option>
+                                  {events.map(event => (
+                                      <option key={event.id} value={event.id}>
+                                          {event.title}
+                                      </option>
+                                  ))}
+                              </select>
+                          ) : task.eventId ? (
+                              events.find(event => event.id === task.eventId)?.title || 'No Event'
+                          ) : (
+                              'No Event'
+                          )}
+                      </td>
+                      <td className="py-2 px-4 border-b">
+                          {isEditing ? (
+                              <>
+                                  <button
+                                      onClick={handleSaveEdit}
+                                      className="bg-blue-500 text-black px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 transition"
+                                  >
+                                      Save
+                                  </button>
+                                  <button
+                                      onClick={handleCancelEdit}
+                                      className="bg-gray-500 text-black px-4 py-2 rounded-full shadow-lg hover:bg-gray-600 transition ml-2"
+                                  >
+                                      Cancel
+                                  </button>
+                              </>
+                          ) : (
+                              <>
+                                  <button
+                                      onClick={() => handleEdit(task)}
+                                      className="bg-yellow-500 text-black px-4 py-2 rounded-full shadow-lg hover:bg-yellow-600 transition"
+                                  >
+                                      Edit
+                                  </button>
+                                  <button
+                                      onClick={() => handleDelete(task.id)}
+                                      className="bg-red-500 text-black px-4 py-2 rounded-full shadow-lg hover:bg-red-600 transition ml-2"
+                                  >
+                                      Delete
+                                  </button>
+                              </>
+                          )}
+                      </td>
+                  </>
+              )} onEdit={function (row: Task): void {
+                  throw new Error('Function not implemented.');
+              } } onDelete={function (id: number): void {
+                  throw new Error('Function not implemented.');
+              } } onSaveEdit={function (): void {
+                  throw new Error('Function not implemented.');
+              } } onCancelEdit={function (): void {
+                  throw new Error('Function not implemented.');
+              } } editingRow={null}        //isEditing={Boolean(editingTask)}
+        //setEditingTask={setEditingTask}
       />
 
       <div className="flex justify-center mt-4">

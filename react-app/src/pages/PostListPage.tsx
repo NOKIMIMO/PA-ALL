@@ -114,6 +114,8 @@ const PostListPage: React.FC = () => {
                                 subtext={null}
                                 pageLink={"./Post/PostPage/" + post.id}
                                 showActions={canEditOrDelete(post)}
+                                category_animal={null}
+                                category_event={null}
                                 onEdit={() => {
                                     if (currentUser?.role === 'admin') {
                                         setEditingPost(post);
