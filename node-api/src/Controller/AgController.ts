@@ -57,7 +57,7 @@ router.get('/managed',
             const AgUsecase = new AgUseCase(db);
             const listAgs = await AgUsecase.listAgsOfUser({ ...listItemRequest }, req.user?.userId!);
             res.status(200);
-            res.json({data : listAgs});
+            res.json(listAgs);
         }
         catch (error) {
             if (error instanceof CustomError) {
