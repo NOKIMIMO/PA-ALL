@@ -74,11 +74,9 @@ export default class BanTicketUseCase{
             end_date: request.end_date,
             moderator_id: currentUserId,
             user: user!,
+            user_id: user!.id,
             moderator: moderator!
         })
-        user.active = false
-
-        await userRepo.save(user)
         const ticket = await banTicketRepo.save(banTicket)
         const response = {
             id: ticket.id,
@@ -103,11 +101,14 @@ export default class BanTicketUseCase{
                 createdAt: moderator!.createdAt
             }
         }
+        user.active = false
+        await userRepo.save(user)
+
         return response
     }
-    async unbanUser(ticketId:number): Promise<banTicketListReponse> {
+    async unbanUser(userid:number): Promise<banTicketListReponse> {
         const banTicketRepo = this.db.getRepository(BanTicket);
-        const banTicket = await banTicketRepo.findOneBy({id:ticketId, active: true})
+        const banTicket = await banTicketRepo.findOneBy({user_id:userid, active: true})
         if (!banTicket) {
             throw new CustomError(404, 'User not banned')
         }

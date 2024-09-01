@@ -7,7 +7,7 @@ export default function NotFound() {
             <FaExclamationTriangle className="text-6xl mb-4" />
             <h1 className="text-4xl font-bold mb-2">404</h1>
             <p className="text-xl">Page Not Found</p>
-            <StripeCheckoutButton />
+            {/* <StripeCheckoutButton /> */}
         </div>
     );
 }

@@ -3,6 +3,7 @@ import UserService from '../../services/UserService';
 import { CustomError } from '../../commons/Error';
 import GenericTable from './GenereicTable';
 import { useUser } from '../../context/UserContext';
+import BanModal from './BanModal';
 
 interface User {
     id: number;
@@ -17,6 +18,7 @@ const UserTable: React.FC = () => {
     const [limit] = useState(10);
     const [error, setError] = useState<string | null>(null);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [banUserId, setBanUserId] = useState<number | null>(null); // State to manage modal visibility
     const { user } = useUser();
 
     useEffect(() => {
@@ -29,8 +31,11 @@ const UserTable: React.FC = () => {
             if (userData instanceof CustomError) {
                 setError(userData.message);
             } else if (userData && Array.isArray(userData.users)) {
-                const activeUsers = userData.users.filter((user: User) => user.active);
-                setUsers(activeUsers);
+                const updatedUsers = userData.users.map((lookedAtUser : User) => ({
+                    ...lookedAtUser,
+                    disabled: lookedAtUser.id === user?.id // Mark current user as disabled
+                }));
+                setUsers(updatedUsers);
                 setError(null);
             } else {
                 setError('Unexpected data format');
@@ -82,7 +87,28 @@ const UserTable: React.FC = () => {
         }
     };
 
-    const headers = ['ID', 'Email', 'Role'];
+    const handleBan = async (data: { user_id: number; message: string; reason: string; end_date: string }) => {
+        try {
+            console.log(`Banning user with id: ${data.user_id}`);
+            await UserService.banUserById(data.user_id.toString(), data);
+            setBanUserId(null);
+            fetchUsers();
+        } catch (err) {
+            setError((err as Error).message);
+        }
+    };
+
+    const handleUnBan = async (id: number) => {
+        try {
+            console.log(`Unban user with id: ${id}`);
+            await UserService.unBanUserById(id.toString());
+            fetchUsers();
+        } catch (err) {
+            setError((err as Error).message);
+        }
+    };
+
+    const headers = ['ID', 'Email', 'Role','Status'];
 
     return (
         <div className="container mx-auto p-8 bg-black text-white rounded-xl shadow-2xl">
@@ -124,13 +150,20 @@ const UserTable: React.FC = () => {
                                 user.role
                             )}
                         </td>
-                       
+                        <td className="py-2 px-4 border-b">
+                            {user.active ? 'Active' : 'Inactive'}
+                        </td>
                     </>
                 )}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onSaveEdit={handleSaveEdit}
                 onCancelEdit={handleCancelEdit}
+                onBan={{
+                    banned: false, // Will be handled in GenericTable based on row data
+                    handleBan: (id: number) => setBanUserId(id), // Open modal on ban click
+                    handleUnBan
+                }}
                 editingRow={editingUser}
             />
             <div className="flex justify-between items-center mt-8">
@@ -149,8 +182,16 @@ const UserTable: React.FC = () => {
                     Next
                 </button>
             </div>
+            {banUserId !== null && (
+                <BanModal
+                    userId={banUserId}
+                    onSubmit={handleBan}
+                    onClose={() => setBanUserId(null)}
+                />
+            )}
         </div>
     );
 };
+
 
 export default UserTable;

@@ -8,6 +8,27 @@ import { CustomError } from '../common/error/customError';
 export class VoteUseCase {
     constructor(private readonly db: DataSource) {}
 
+    createSecondRoundOptions(originalVote: Vote): void {
+        // create a new vote with only the top 2 options
+        const voteRepository = this.db.getRepository(Vote);
+        const optionRepository = this.db.getRepository(Option);
+        const newVote = voteRepository.create({
+            title: `${originalVote.title} - Second Round`,
+            description: `Second round of voting for ${originalVote.title}`,
+            endDate: new Date(originalVote.endDate.getTime() + 7 * 24 * 60 * 60 * 1000), // Adding 1 week
+            secondRoundEnabled: false,
+        });
+        const sortedOptions = originalVote.options.sort((a, b) => b.voteCount - a.voteCount);
+        const topTwoOptions = sortedOptions.slice(0, 2);
+        const options = topTwoOptions.map(option => {
+            return optionRepository.create({ name: option.name, vote: newVote });
+        });
+        optionRepository.save(options);
+        
+        originalVote.active = false;
+        voteRepository.save(originalVote);
+    }
+
     async listVotes(filter : ListVotesRequest): Promise<VoteResponse[]> {
         const query = this.db.getRepository(Vote).createQueryBuilder('vote');
         if (filter.start_date) {
@@ -26,9 +47,19 @@ export class VoteUseCase {
         //also get related options
         query.leftJoinAndSelect('vote.options', 'options'); 
         const votes = await query.getMany();
+        const voteRepository = this.db.getRepository(Vote);
+        //go trough the votes and deactive the ones that are expired
+        votes.forEach(vote => {
+            if (vote.endDate < new Date()) {
+                vote.active = false;
+                voteRepository.save(vote);
+                if (vote.secondRoundEnabled) {
+                    this.createSecondRoundOptions(vote);
+                }
+            }
+        });
+
         return votes
-
-
 
         // const voteRepository = this.db.getRepository(Vote);
         // return await voteRepository.find({ relations: ['options'] });
@@ -65,8 +96,16 @@ export class VoteUseCase {
             throw new CustomError(404, 'Vote not found');
         }
 
-        const userVote = await userVoteRepository.findOne({ where: { voteId: id, userId } });
+        if (vote.endDate < new Date()) {
+            vote.active = false;
+            await voteRepository.save(vote);
+            if (vote.secondRoundEnabled) {
+                this.createSecondRoundOptions(vote);
+            }
+        }
 
+        const userVote = await userVoteRepository.findOne({ where: { voteId: id, userId } });
+        
         return {
             ...vote,
             userVoted: !!userVote // Ajouter un indicateur pour savoir si l'utilisateur a voté

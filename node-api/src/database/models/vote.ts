@@ -27,7 +27,12 @@ export class Vote {
     @OneToMany(() => Option, option => option.vote, { cascade: true })
     options: Option[];
 
-    constructor(id: number, title: string, description: string, createdAt: Date, updatedAt: Date, endDate: Date, secondRoundEnabled: boolean, options: Option[]) {
+    @Column({ default: true })
+    active: boolean;
+
+    constructor(id: number, title: string, description: string, createdAt: Date,
+         updatedAt: Date, endDate: Date, secondRoundEnabled: boolean, options: Option[],
+         active: boolean) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -36,5 +41,7 @@ export class Vote {
         this.endDate = endDate;
         this.secondRoundEnabled = secondRoundEnabled;
         this.options = options;
+        this.active = active;
     }
+
 }

@@ -9,8 +9,9 @@ import { validatorMiddleware } from '../common/middleware/validator-middleware';
 import { JwtPayload } from 'jsonwebtoken';
 import { CustomError } from '../common/error/customError';
 import { TaskAgUseCase } from '../domain/taskAg-usecase';
-import { agTaskAssignValidation, agTaskCreateValidation, agTaskSelectOneValidation, agTaskUpdateValidation } from '../Validators/agTaskValidator';
+import { agTaskAssignMultipleValidation, agTaskAssignValidation, agTaskCreateValidation, agTaskSelectOneValidation, agTaskUpdateValidation } from '../Validators/agTaskValidator';
 import { selectAgValidation } from '../Validators/agValidator';
+import { ConnectionCheckOutFailedEvent } from 'typeorm';
 
 const router = Router();
 router.get('/',
@@ -273,10 +274,11 @@ router.get('/:taskId/assign/:userId',
 router.post('/:taskId/assign',
     authMiddleware,
     validatorMiddleware(agTaskSelectOneValidation, 'params'),
-    validatorMiddleware(listItemValidation, 'body'),
+    validatorMiddleware(agTaskAssignMultipleValidation, 'body'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
-        const userIds = req.body;
+        const userIds = req.body.userIds;
+        console.log(req.body);
         try {
             const taskUseCase = new TaskAgUseCase(db);
             await taskUseCase.assignTaskToMultipleUsers(taskId, userIds);
@@ -318,10 +320,10 @@ router.delete('/:taskId/unassign/:userId',
 router.post('/:taskId/unassign',
     authMiddleware,
     validatorMiddleware(agTaskSelectOneValidation, 'params'),
-    validatorMiddleware(listItemValidation, 'body'),
+    validatorMiddleware(agTaskAssignMultipleValidation, 'body'),
     async (req: Request, res: Response): Promise<void> => {
         const taskId = parseInt(req.params.taskId);
-        const userIds = req.body;
+        const userIds = req.body.userIds;
         try {
             const taskUseCase = new TaskAgUseCase(db);
             await taskUseCase.removeTaskFromMultipleUsers(taskId, userIds);
