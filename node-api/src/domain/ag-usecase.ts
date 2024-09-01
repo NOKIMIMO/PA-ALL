@@ -33,6 +33,8 @@ interface AgResponse {
     vote_info?: VoteInAgResponse;
     createdAt: Date;
     updatedAt: Date;
+    joined: boolean;
+    numberOfParticipants: number;
 }
 
 export default class AgUseCase {
@@ -160,6 +162,10 @@ export default class AgUseCase {
         if (!ag) {
             throw new CustomError(404, 'Ag not found')
         }
+        const agUserRepo = this.db.getRepository(UsersAgs)
+        const userAg = await agUserRepo.findOneBy({ agId: id, userid: userId })
+        const numberOfParticipants = await agUserRepo.countBy({ agId: id })
+        const joined = !!userAg
         const agResponse: AgResponse = {
             id: ag.id,
             title: ag.title,
@@ -171,7 +177,9 @@ export default class AgUseCase {
             vote_id: ag.vote_id,
             ban_appeal_id: ag.ban_appeal_id,
             createdAt: ag.createdAt,
-            updatedAt: ag.updatedAt
+            updatedAt: ag.updatedAt,
+            joined,
+            numberOfParticipants: numberOfParticipants
         }
         if (ag.vote_id) {
             const voteRepo = this.db.getRepository(Vote)

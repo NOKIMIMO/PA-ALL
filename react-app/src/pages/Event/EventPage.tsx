@@ -118,7 +118,7 @@ export default function EventPage() {
                 description: formData.description,
                 event_date: formData.event_date,
                 location: formData.location,
-                max_participant: Number(formData.max_participant),
+                max_participants: Number(formData.max_participant),
             });
             setEvent({ ...event, ...formData });
             setIsEditing(false);

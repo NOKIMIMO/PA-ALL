@@ -22,52 +22,24 @@ export default function AGPage() {
     user?.role === user_access_type.ADMIN ||
     user?.role === user_access_type.SUPER_ADMIN;
 
-  const fetchParticipants = async () => {
+  const fetchAg = async () => {
     try {
-      const participantsData = await AGService.getAgParticipants(
-        parseInt(agId!)
-      );
-      setParticipants(participantsData.length);
+      const agData = await AGService.getAgById(parseInt(agId!));
+      console.log(agData);
+      setAg(agData);
+      setIsParticipating(agData.joined)
+      setTotalMembers(agData.numberOfParticipants)
+      setMinParticipants(agData.minimum_participants)
+      setParticipants(agData.numberOfParticipants);
+      setLoading(false);
     } catch (error: any) {
       setError(error.message);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const fetchAg = async () => {
-      try {
-        const agData = await AGService.getAgById(parseInt(agId!));
-        setAg(agData);
-
-        if (agData.isAG) {
-          let page = 1;
-          let users: any[] = [];
-          let hasMore = true;
-
-          while (hasMore) {
-            const usersData = await UserService.getUserList(page, 100);
-            users = users.concat(usersData.users);
-            if (usersData.users.length < 100) {
-              hasMore = false;
-            } else {
-              page++;
-            }
-          }
-
-          const total = users.length;
-          setTotalMembers(total);
-          setMinParticipants(Math.ceil(total / 2));
-        }
-
-        setLoading(false);
-      } catch (error: any) {
-        setError(error.message);
-        setLoading(false);
-      }
-    };
-
     fetchAg();
-    fetchParticipants();
   }, [agId, user]);
 
   const handleJoinAg = async () => {
@@ -85,24 +57,6 @@ export default function AGPage() {
       await AGService.leaveAg(parseInt(agId!));
       setIsParticipating(false);
       setParticipants((prev) => prev - 1);
-    } catch (error: any) {
-      setError(error.message);
-    }
-  };
-
-  const handleRemoveUser = async (userId: number) => {
-    try {
-      await AGService.removeUsersFromAg(parseInt(agId!), [userId]);
-      await fetchParticipants();
-    } catch (error: any) {
-      setError(error.message);
-    }
-  };
-
-  const handleAddUser = async (userId: number) => {
-    try {
-      await AGService.addUsersToAg(parseInt(agId!), [userId]);
-      await fetchParticipants();
     } catch (error: any) {
       setError(error.message);
     }
@@ -133,31 +87,31 @@ export default function AGPage() {
             ← Back
           </button>
           <h2 className="text-3xl font-bold text-gray-800 mb-3">{ag.title}</h2>
-          {ag.isAG && (
-            <div className="text-red-500 font-semibold">
-              <svg
-                className="inline w-6 h-6 mr-2"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 15l5.657-5.657a4 4 0 10-5.657-5.657 4 4 0 10-5.657 5.657L10 15zm0 0l-5.657 5.657a4 4 0 105.657-5.657 4 4 0 105.657 5.657L10 15z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Assemblée Générale
+
+          <div className="text-red-500 font-semibold">
+            <svg
+              className="inline w-6 h-6 mr-2"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 15l5.657-5.657a4 4 0 10-5.657-5.657 4 4 0 10-5.657 5.657L10 15zm0 0l-5.657 5.657a4 4 0 105.657-5.657 4 4 0 105.657 5.657L10 15z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Assemblée Générale
+            {/* <p className="text-sm mt-2">
+              Note: Au moins la moitié des membres de l'association doivent
+              être présents sous peine que l'assemblée générale soit annulée.
+            </p> */}
+            {participants < minParticipants && (
               <p className="text-sm mt-2">
-                Note: Au moins la moitié des membres de l'association doivent
-                être présents sous peine que l'assemblée générale soit annulée.
+                Minimum de participants requis: {minParticipants}
               </p>
-              {totalMembers > 0 && (
-                <p className="text-sm mt-2">
-                  Minimum de participants requis: {minParticipants}
-                </p>
-              )}
-            </div>
-          )}
+            )}
+          </div>
+
         </div>
         <div className="p-5">
           <p className="text-gray-700">
@@ -175,9 +129,8 @@ export default function AGPage() {
             </p>
           )}
           <p
-            className={`text-gray-700 mt-3 flex items-center ${
-              isBelowMinParticipants ? "text-red-500" : "text-gray-700"
-            }`}
+            className={`text-gray-700 mt-3 flex items-center ${isBelowMinParticipants ? "text-red-500" : "text-gray-700"
+              }`}
           >
             <strong>Participants:</strong>
             <svg
@@ -208,27 +161,13 @@ export default function AGPage() {
             </button>
           )}
         </div>
-        {isAdmin && (
-          <div className="p-5">
-            <button
-              onClick={() => handleAddUser(user.id)}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2"
-            >
-              Ajouter un utilisateur
-            </button>
-            <button
-              onClick={() => handleRemoveUser(user.id)}
-              className="bg-yellow-500 text-white px-4 py-2 rounded-md"
-            >
-              Retirer un utilisateur
-            </button>
-          </div>
-        )}
       </div>
-      <div>
-                {/* Conditionally render the VoteDetail component */}
-                {ag.vote_info && <VoteDetail voteId={ag.vote_info.vote.id} />}
-      </div>
+      {isParticipating &&
+        <div className="p-5">
+          {/* Conditionally render the VoteDetail component */}
+          {ag.vote_info && <VoteDetail voteId={ag.vote_info.vote.id} />}
+        </div>
+      }
     </div>
   );
 }
