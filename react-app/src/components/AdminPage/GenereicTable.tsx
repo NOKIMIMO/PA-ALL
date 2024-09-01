@@ -1,6 +1,6 @@
 interface GenericTableProps<T> {
     headers: string[];
-    rows: (T & { disabled?: boolean })[]; // Add `disabled` to the row type
+    rows: (T & { disabled?: boolean })[];
     renderRow: (row: T, isEditing: boolean, handleChange: (e: React.ChangeEvent<any>) => void) => React.ReactNode;
     onEdit: (row: T) => void;
     onDelete: (id: number) => void;
@@ -8,6 +8,11 @@ interface GenericTableProps<T> {
     onCancelEdit: () => void;
     onBan?: OnBanProps;
     editingRow: T | null;
+    sortColumn?: string;
+    sortOrder?: 'asc' | 'desc';
+    onSort?: (column: string) => void;
+    filters?: Record<string, string[]>;
+    onFilterChange?: (column: string, selectedValues: string[]) => void;
 }
 
 interface OnBanProps {

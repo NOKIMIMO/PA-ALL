@@ -147,4 +147,22 @@ export default class BanTicketUseCase{
         }
         return response
     }
+
+    async deleteBanTicket(banTicketId: number): Promise<void> {
+        const banTicketRepo = this.db.getRepository(BanTicket);
+        const banTicket = await banTicketRepo.findOneBy({id: banTicketId})
+        if (!banTicket) {
+            throw new CustomError(404, 'Ban ticket not found')
+        }
+        const userRepo = this.db.getRepository(User);
+        const user = await userRepo.findOneBy({id: banTicket.user_id})
+        if (!user) {
+            throw new CustomError(404, 'User not found')
+        }
+        user.active = true
+        await userRepo.save(user)
+        banTicket.active = false
+        await banTicketRepo.save(banTicket)
+        
+    }
 }
