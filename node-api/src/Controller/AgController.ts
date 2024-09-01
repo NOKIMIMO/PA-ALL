@@ -57,7 +57,7 @@ router.get('/managed',
             const AgUsecase = new AgUseCase(db);
             const listAgs = await AgUsecase.listAgsOfUser({ ...listItemRequest }, req.user?.userId!);
             res.status(200);
-            res.json({data : listAgs});
+            res.json(listAgs);
         }
         catch (error) {
             if (error instanceof CustomError) {
@@ -174,7 +174,7 @@ router.get('/:agId',
 
 router.delete('/:agId',
     authMiddleware,
-    validatorMiddleware(selectAgValidation, 'body'),
+    validatorMiddleware(selectAgValidation, 'params'),
     async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
         const agId = parseInt(req.params.agId);
         try {
@@ -187,6 +187,7 @@ router.delete('/:agId',
             if (error instanceof CustomError) {
                 res.status(error.code).send({ error: error.message });
             } else {
+                console.log(error);
                 res.status(500);
                 res.json({ error: 'Internal error' });
             }

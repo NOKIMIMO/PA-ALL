@@ -7,6 +7,7 @@ import { user_access_type } from "../commons/user_access_type";
 import { useUser } from '../context/UserContext';
 import Loading from "../components/Loading";
 
+
 interface Event {
   id: number;
   title: string;
@@ -15,7 +16,27 @@ interface Event {
   location: string;
   userId: number;
   max_participants: number;
+  category_event: category_event;
+  category_animal: category_animal;
 }
+
+enum category_event {
+  SHOW = 'SHOW',
+  MEETING = 'MEETING',
+  WORKSHOP = 'WORKSHOP',
+  SEMINAR = 'SEMINAR',
+  CONFERENCE = 'CONFERENCE',
+}
+
+enum category_animal {
+  ALL = 'ALL',
+  CAT = 'CAT',
+  DOG = 'DOG',
+  BIRD = 'BIRD',
+  HORSE = 'HORSE',
+  REPTILE = 'REPTILE',
+}
+
 
 interface EventsResponse {
   events: Event[];
@@ -96,7 +117,7 @@ export default function EventListPage() {
 
   const handleDelete = async (eventId: number) => {
     try {
-      await eventService.deleteEventById(eventId.toString());
+      await eventService.deleteEventById(eventId);
       fetchEvents(); // Refresh events after deletion
     } catch (error: any) {
       setError(error.message || 'An unknown error occurred');
@@ -110,8 +131,8 @@ export default function EventListPage() {
 
   const filteredEvents = filterEventsByDate(events, startDate, endDate);
   const finalFilteredEvents = filterEventsBySearch(filteredEvents, searchQuery);
-  if (loading) return <Loading/>
-  
+  if (loading) return <Loading />
+
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -183,6 +204,8 @@ export default function EventListPage() {
                   key={event.id}
                   title={event.title}
                   content={event.description}
+                  category_animal={event.category_animal}
+                  category_event={event.category_event}
                   subtext={event.event_date}
                   pageLink={"./Event/EventPage/" + event.id}
                   showActions={isAdmin} // Show edit and delete actions only if admin

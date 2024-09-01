@@ -1,6 +1,6 @@
 import { FaEye, FaPaw, FaEyeSlash } from 'react-icons/fa';
 import { useState } from 'react';
-import AuthService from '../services/AuthService';
+import AuthService, {BanResponse} from '../services/AuthService';
 import { CustomError } from '../commons/Error';
 import { useToast } from '../context/ToastManager';
 import { ToastType } from '../enum/toast';
@@ -44,6 +44,28 @@ export default function LogginPage() {
 
             if (result instanceof CustomError) {
                 setError(result.message);
+                setLoading(false);
+            }else if(result instanceof BanResponse){
+                //en_date format is 2025-02-28T23:00:00.000Z
+                //need to format it to be more readable
+                const endDate = new Date(result.end_date);
+
+                // Format the date to be more readable
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    hour: 'numeric', 
+                    minute: 'numeric', 
+                    second: 'numeric', 
+                    timeZoneName: 'short' 
+                } as Intl.DateTimeFormatOptions;
+                const formattedEndDate = endDate.toLocaleDateString('en-US', options);
+            
+                // Use the formatted date in your message
+                alert(`You are banned for ${result.originalDuration} because ${result.reason}. ${result.message}. You will be unbanned on ${formattedEndDate}`);
+                addToast("this account is banned", ToastType.ERROR);
+                setError("this account is banned");
                 setLoading(false);
             } else {
                 // Login successful, redirect to homepage with token in local storage

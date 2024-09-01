@@ -8,6 +8,7 @@ interface Post {
     title: string;
     content: string;
     userId: string;
+    active: boolean;
 }
 
 const PostTable: React.FC = () => {

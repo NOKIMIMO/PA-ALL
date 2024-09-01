@@ -21,7 +21,7 @@ const StripeCheckoutButton = () => {
                 return;
             }
             try {
-                const session = await StripeService.createCheckoutSession(parsedAmount.toString(),'payment',user!.email);
+                const session = await StripeService.createCheckoutSession(parsedAmount,null,'payment',user!.email);
                 setSessionId(session.id);
                 setError(''); // Réinitialisez l'erreur si la création réussit
             } catch (error) {
@@ -63,7 +63,7 @@ const StripeCheckoutButton = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="border border-gray-300 p-2 mb-4 w-full"
-                    placeholder="Amount in dollars"
+                    placeholder="Amount in euros"
                 />
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 <button

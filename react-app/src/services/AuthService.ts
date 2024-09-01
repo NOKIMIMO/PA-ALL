@@ -14,8 +14,32 @@ export interface LogoutResponse {
   message: string;
 }
 
+export class BanResponse {
+  ban_id: string;
+  message: string;
+  reason: string;
+  end_date: string;
+  durationRemaining: string;
+  originalDuration: string;
+  constructor(   
+    ban_id: string,
+    message: string,
+    reason: string,
+    end_date: string,
+    durationRemaining: string,
+    originalDuration: string,) {
+   
+    this.ban_id = ban_id;
+    this.message = message;
+    this.reason = reason;
+    this.end_date = end_date;
+    this.durationRemaining = durationRemaining;
+    this.originalDuration = originalDuration;
+  }
+}
+
 class AuthService {
-  async login(email: string, password: string): Promise<LogRegResponse | CustomError> {
+  async login(email: string, password: string): Promise<LogRegResponse | CustomError | BanResponse> {
 
     const body = {
       email: email,
@@ -30,6 +54,10 @@ class AuthService {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.ban_id) {
+          console.log(data)
+          return new BanResponse(data.ban_id, data.message, data.reason, data.end_date, data.durationRemaining, data.originalDuration);
+        }
         return new CustomError(response.status, data.error || 'Something went wrong');
       }
       localStorage.setItem('token', data.token);

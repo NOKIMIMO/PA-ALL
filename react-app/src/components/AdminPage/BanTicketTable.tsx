@@ -1,79 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import { EventService } from '../../services/EventService';
+import { useEffect, useState } from 'react';
 import { CustomError } from '../../commons/Error';
 import GenericTable from './GenereicTable';
+import { useUser } from '../../context/UserContext';
+import BanTicketService from '../../services/BanTicketService';
 
-interface Event {
+interface tickets {
     id: number;
-    title: string;
-    description: string;
-    event_date: string;
-    location: string;
-    userId: number;
-    max_participants: number;
+    user_id: number;
+    reason: string;
+    message: string;
+    end_date: string;
     active: boolean;
+    moderator_id: number;
 }
 
-const EventTable: React.FC = () => {
-    const [events, setEvents] = useState<Event[]>([]);
+const BanTicketTable: React.FC = () => {
+    const { user } = useUser();
+    const [tickets, setTickets] = useState<tickets[]>([]);
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
     const [error, setError] = useState<string | null>(null);
-    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const [editingTicket, setEditingTicket] = useState<tickets | null>(null);
 
     useEffect(() => {
-        fetchEvents();
+        fetchTickets();
     }, [page, limit]);
 
-    const eventService = new EventService();
-
-    const fetchEvents = async () => {
+    const fetchTickets = async () => {
         try {
-            const eventData = await eventService.getEvents(page, limit);
-            if (eventData instanceof CustomError) {
-                setError(eventData.message);
-            } else if (eventData && Array.isArray(eventData.events)) {
-                setEvents(eventData.events);
-                setError(null);
+            const ticketData = await BanTicketService.getBanTicketList(page, limit);
+            if (ticketData instanceof CustomError) {
+                console.error(ticketData.message);
             } else {
-                setError('Unexpected data format');
+                setTickets(ticketData.banTicketProcessed);
             }
         } catch (err) {
-            setError((err as Error).message);
+            console.error((err as Error).message);
         }
-    };
-
+    }
     const handleDelete = async (id: number) => {
         try {
-            await eventService.deleteEventById(id);
-            fetchEvents();
+            await BanTicketService.deleteBanTicketById(id.toString());
+            fetchTickets();
         } catch (err) {
             setError((err as Error).message);
         }
     };
 
-    const handleEdit = (event: Event) => {
-        setEditingEvent(event);
+    const handleEdit = (ticket: tickets) => {
+        setEditingTicket(ticket);
     };
 
     const handleCancelEdit = () => {
-        setEditingEvent(null);
+        setEditingTicket(null);
     };
 
     const handleSaveEdit = async () => {
-        if (editingEvent) {
+        if (editingTicket) {
             const updateData = {
-                eventId: editingEvent.id,
-                title: editingEvent.title,
-                description: editingEvent.description,
-                event_date: editingEvent.event_date,
-                location: editingEvent.location,
-                max_participants : editingEvent.max_participants,
+                user_id: editingTicket.user_id,
+                reason: editingTicket.reason,
+                message: editingTicket.message,
+                end_date: editingTicket.end_date,
             };
             try {
-                await eventService.patchEventById(editingEvent.id.toString(), updateData);
-                setEditingEvent(null);
-                fetchEvents();
+                await BanTicketService.patchBanTicketById(editingTicket.id.toString(), updateData);
+                setEditingTicket(null);
+                fetchTickets();
             } catch (err) {
                 setError((err as Error).message);
             }
@@ -81,72 +74,63 @@ const EventTable: React.FC = () => {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        if (editingEvent) {
-            setEditingEvent({ ...editingEvent, [e.target.name]: e.target.value });
+        if (editingTicket) {
+            setEditingTicket({ ...editingTicket, [e.target.name]: e.target.value });
         }
     };
 
-    const headers = ['ID', 'Title', 'Description', 'Date', 'Location'];
+    const headers = ['ID', 'User ID','Moderator ID','Active', 'Reason', 'Message', 'End Date'];
 
     return (
         <div className="container mx-auto p-8 bg-black text-white rounded-xl shadow-2xl">
-            <h1 className="text-4xl font-bold mb-8 text-center">Event Management</h1>
+            <h1 className="text-4xl font-bold mb-8 text-center">Ban Ticket Management</h1>
             {error && <div className="bg-red-600 text-white p-4 mb-8 rounded-lg">{error}</div>}
-            <GenericTable<Event>
+            <GenericTable<tickets>
                 headers={headers}
-                rows={events}
-                renderRow={(event, isEditing, handleInputChange) => (
+                rows={tickets}
+                renderRow={(ticket, isEditing, handleInputChange) => (
                     <>
-                        <td className="py-2 px-4 border-b">{event.id}</td>
+                        <td className="py-2 px-4 border-b">{ticket.id}</td>
+                        <td className="py-2 px-4 border-b">{ticket.user_id}</td>
+                        <td className="py-2 px-4 border-b">{ticket.moderator_id}</td>
+                        <td className="py-2 px-4 border-b">{ticket.active ? 'Active' : 'Inactive'}</td>
                         <td className="py-2 px-4 border-b">
                             {isEditing ? (
                                 <input
                                     type="text"
-                                    name="title"
-                                    value={event.title}
+                                    name="reason"
+                                    value={ticket.reason}
                                     onChange={handleInputChange}
                                     className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
                                 />
                             ) : (
-                                event.title
+                                ticket.reason
                             )}
                         </td>
                         <td className="py-2 px-4 border-b">
                             {isEditing ? (
                                 <textarea
-                                    name="description"
-                                    value={event.description}
+                                    name="message"
+                                    value={ticket.message}
                                     onChange={handleInputChange}
                                     className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
                                 />
                             ) : (
-                                event.description
+                                ticket.message
                             )}
                         </td>
                         <td className="py-2 px-4 border-b">
                             {isEditing ? (
                                 <input
                                     type="date"
-                                    name="event_date"
-                                    value={event.event_date}
+                                    name="end_date"
+                                    value={ticket.end_date}
                                     onChange={handleInputChange}
+                                    min={new Date().toISOString().split('T')[0]}
                                     className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
                                 />
                             ) : (
-                                event.event_date
-                            )}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                            {isEditing ? (
-                                <input
-                                    type="text"
-                                    name="location"
-                                    value={event.location}
-                                    onChange={handleInputChange}
-                                    className="bg-gray-900 text-white border-b-2 border-yellow-500 focus:border-yellow-700 focus:outline-none px-3 py-2"
-                                />
-                            ) : (
-                                event.location
+                                ticket.end_date
                             )}
                         </td>
                     </>
@@ -155,7 +139,7 @@ const EventTable: React.FC = () => {
                 onDelete={handleDelete}
                 onSaveEdit={handleSaveEdit}
                 onCancelEdit={handleCancelEdit}
-                editingRow={editingEvent}
+                editingRow={editingTicket}
             />
             <div className="flex justify-between items-center mt-8">
                 <button
@@ -177,4 +161,5 @@ const EventTable: React.FC = () => {
     );
 };
 
-export default EventTable;
+
+export default BanTicketTable;

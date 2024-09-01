@@ -1,16 +1,27 @@
-
 interface GenericTableProps<T> {
     headers: string[];
-    rows: T[];
+    rows: (T & { disabled?: boolean })[];
     renderRow: (row: T, isEditing: boolean, handleChange: (e: React.ChangeEvent<any>) => void) => React.ReactNode;
     onEdit: (row: T) => void;
     onDelete: (id: number) => void;
     onSaveEdit: () => void;
     onCancelEdit: () => void;
+    onBan?: OnBanProps;
     editingRow: T | null;
+    sortColumn?: string;
+    sortOrder?: 'asc' | 'desc';
+    onSort?: (column: string) => void;
+    filters?: Record<string, string[]>;
+    onFilterChange?: (column: string, selectedValues: string[]) => void;
 }
 
-const GenericTable = <T extends { id: number }>({
+interface OnBanProps {
+    banned: boolean;
+    handleBan: (id: number) => void;
+    handleUnBan: (id: number) => void;
+}
+
+const GenericTable = <T extends { id: number, active: boolean }>({
     headers,
     rows,
     renderRow,
@@ -18,6 +29,7 @@ const GenericTable = <T extends { id: number }>({
     onDelete,
     onSaveEdit,
     onCancelEdit,
+    onBan,
     editingRow,
 }: GenericTableProps<T>) => {
     return (
@@ -43,12 +55,14 @@ const GenericTable = <T extends { id: number }>({
                                         <button
                                             className="bg-green-500 text-white px-2 py-1 rounded mr-2"
                                             onClick={onSaveEdit}
+                                            disabled={row.disabled}
                                         >
                                             Save
                                         </button>
                                         <button
                                             className="bg-gray-500 text-white px-2 py-1 rounded"
                                             onClick={onCancelEdit}
+                                            disabled={row.disabled}
                                         >
                                             Cancel
                                         </button>
@@ -58,15 +72,35 @@ const GenericTable = <T extends { id: number }>({
                                         <button
                                             className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
                                             onClick={() => onEdit(row)}
+                                            disabled={row.disabled}
                                         >
                                             Edit
                                         </button>
                                         <button
-                                            className="bg-red-500 text-white px-2 py-1 rounded"
+                                            className="bg-red-500 text-white px-2 py-1 rounded mr-2"
                                             onClick={() => onDelete(row.id)}
+                                            disabled={row.disabled}
                                         >
                                             Delete
                                         </button>
+                                        {onBan && row.active && (
+                                            <button
+                                                className="bg-yellow-500 text-white px-2 py-1 rounded"
+                                                onClick={() => onBan.handleBan(row.id)}
+                                                disabled={row.disabled}
+                                            >
+                                                Ban
+                                            </button>
+                                        )}
+                                        {onBan && !row.active && (
+                                            <button
+                                                className="bg-green-500 text-white px-2 py-1 rounded"
+                                                onClick={() => onBan.handleUnBan(row.id)}
+                                                disabled={row.disabled}
+                                            >
+                                                Unban
+                                            </button>
+                                        )}
                                     </>
                                 )}
                             </td>

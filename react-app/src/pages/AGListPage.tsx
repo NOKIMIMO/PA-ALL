@@ -74,6 +74,15 @@ export default function AGListPage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    try {
+      await AgService.deleteAg(id);
+      fetchAgs();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
+
   return (
     <div className="container mx-auto mt-5 p-4">
       <div className="flex justify-between mb-4">
@@ -137,7 +146,7 @@ export default function AGListPage() {
             pageLink={"./Ag/AgPage/" + ag.id}
             showActions={isAdmin} // Show edit and delete actions only if admin
             onEdit={() => { }}
-            onDelete={() => { }}
+            onDelete={() => handleDelete(ag.id)}
           />
         ))}
       </div>

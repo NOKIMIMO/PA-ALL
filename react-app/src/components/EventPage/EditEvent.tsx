@@ -33,7 +33,7 @@ const EditEvent: React.FC<EditEventProps> = ({ event, onEventUpdated, onCancel }
                 event_date: eventDate,
                 location,
                 eventId: event.id,
-                max_participants: event.max_participants, 
+                max_participant: event.max_participants, 
             });
             onEventUpdated();
         } catch (error: any) {
