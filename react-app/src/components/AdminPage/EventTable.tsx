@@ -11,6 +11,7 @@ interface Event {
     location: string;
     userId: number;
     max_participants: number;
+    active: boolean;
 }
 
 const EventTable: React.FC = () => {
@@ -44,7 +45,7 @@ const EventTable: React.FC = () => {
 
     const handleDelete = async (id: number) => {
         try {
-            await eventService.deleteEventById(id.toString());
+            await eventService.deleteEventById(id);
             fetchEvents();
         } catch (err) {
             setError((err as Error).message);

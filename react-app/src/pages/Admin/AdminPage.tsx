@@ -4,6 +4,7 @@ import UserTable from '../../components/AdminPage/UsersTable';
 import EventTable from '../../components/AdminPage/EventTable';
 import MessageListPage from '../MessageListPage';
 import VoteTable from '../../components/AdminPage/VoteTable';
+import TaskTable from '../../components/AdminPage/TaskTable';
 
 export default function AdminPage() {
     const [activeTab, setActiveTab] = useState('users');
@@ -20,6 +21,8 @@ export default function AdminPage() {
                 return <MessageListPage />;
             case 'votes':
                 return <VoteTable />;
+            case 'tasks':
+                return <TaskTable/>
             default:
                 return null;
         }
@@ -58,6 +61,12 @@ export default function AdminPage() {
                     onClick={() => setActiveTab('votes')}
                 >
                     Votes
+                </a>
+                <a
+                    className={`tab tab-lifted ${activeTab === 'tasks' ? 'tab-active' : ''} hover:bg-purple-700`}
+                    onClick={() => setActiveTab('tasks')}
+                >
+                    Tasks
                 </a>
             </div>
 
