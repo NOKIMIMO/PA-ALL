@@ -53,8 +53,6 @@ function validateCreateEvent(body: CreateEventBody): void {
 function validateUpdateEvent(body: PatchEventByIdBody): void {
     const errors: string[] = [];
 
-    console.log("log: " + typeof body.max_participant);
-
     if (body.eventId !== undefined && typeof body.eventId !== 'number') errors.push('Event ID must be a number.');
     if (body.title !== undefined && typeof body.title !== 'string') errors.push('Title must be a string.');
     if (body.description !== undefined && typeof body.description !== 'string') errors.push('Description must be a string.');
