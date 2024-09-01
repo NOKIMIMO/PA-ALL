@@ -30,6 +30,8 @@ COPY --from=builder /app/node_modules ./node_modules
 
 COPY --from=builder /app/dist ./dist
 
+COPY PattesPartage.jar /var/app/build/PattesPartage.jar
+
 # Copy any other necessary files, e.g., .env
 COPY .env ./
 
