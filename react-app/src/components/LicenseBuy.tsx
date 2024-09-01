@@ -49,7 +49,7 @@ const BuyLicenseCard = () => {
         setSelectedTier(tier);
         if (tier.price > 0) {
             try {
-                const session = await StripeService.createCheckoutSession(tier.price_id,tier.payment_mode,user?.email!);
+                const session = await StripeService.createCheckoutSession(null,tier.price_id,tier.payment_mode,user?.email!);
                 setSessionId(session.id);
                 setError('');
             } catch (error) {

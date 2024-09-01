@@ -8,9 +8,11 @@ const PaymentRedirectPage = () => {
     const navigate = useNavigate();
     const [status, setStatus] = useState<'success' | 'cancel' | 'error' | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [isProduct, setIsProduct] = useState<boolean>(false);
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
+        const type = searchParams.get('type');
         const sessionId = searchParams.get('session_id');
         const isSuccess = searchParams.get('success') === 'true';
         const isCancel = searchParams.get('cancel') === 'true';
@@ -18,12 +20,20 @@ const PaymentRedirectPage = () => {
             StripeService.getSession(sessionId)
                 .then(async (session) => {
                     if (session.payment_status === 'paid') {
-                        try {
-                            const data = await LicenseService.createLicense(sessionId);
+                        if (type === 'donation') {
+                            // Handle donation
+                            console.log('Donation successful:', session);
                             setStatus('success');
-                        } catch (error) {
-                            console.error('Error creating license:', error);
-                            setStatus('error');
+                            setIsProduct(false);
+                        } else if (type === 'product') {
+                            try {
+                                const data = await LicenseService.createLicense(sessionId);
+                                setStatus('success');
+                                setIsProduct(true);
+                            } catch (error) {
+                                console.error('Error creating license:', error);
+                                setStatus('error');
+                            }
                         }
                     } else {
                         setStatus('error');
@@ -57,10 +67,19 @@ const PaymentRedirectPage = () => {
 
     return (
         <div className="container mx-auto p-4 text-center">
-            {status === 'success' && (
+            {status === 'success' && isProduct === true && (
                 <div>
                     <h1>Payment Successful!</h1>
                     <p>Your subscription is now active. Thank you!</p>
+                    <button className="btn btn-primary" onClick={handleRedirect}>
+                        Go to Home
+                    </button>
+                </div>
+            )}
+            {status === 'success' && isProduct === false && (
+                <div>
+                    <h1>Payment Successful!</h1>
+                    <p>Your Donation was completed. Thank you!</p>
                     <button className="btn btn-primary" onClick={handleRedirect}>
                         Go to Home
                     </button>
