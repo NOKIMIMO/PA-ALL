@@ -12,6 +12,7 @@ export default function Burger({ role }: BurgerProps) {
     const isEmployee = role === user_access_type.EMPLOYEE;
     const isLicensed = role === user_access_type.LICENSED;
 
+    console.log(role);
     return (
         <div>
             <div className="dropdown">
@@ -45,6 +46,7 @@ export default function Burger({ role }: BurgerProps) {
                             <li><a href='/vault'>GDE</a></li>
                         )
                     }
+                    
                     {isLogged && isAdmin && <li><a href='/admin'>Admin</a></li>}
                 </ul>
             </div>

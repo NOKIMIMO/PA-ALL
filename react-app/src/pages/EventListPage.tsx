@@ -95,7 +95,7 @@ export default function EventListPage() {
 
   const handleDelete = async (eventId: number) => {
     try {
-      await eventService.deleteEventById(eventId.toString());
+      await eventService.deleteEventById(eventId);
       fetchEvents(); // Refresh events after deletion
     } catch (error: any) {
       setError(error.message || 'An unknown error occurred');

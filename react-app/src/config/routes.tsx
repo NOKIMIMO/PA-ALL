@@ -50,6 +50,7 @@ const routes: IRoute[] = [
             <ProtectedRoute
                 requiredRole={[
                     user_access_type.SUPER_ADMIN,
+                    user_access_type.ADMIN, // A voir
                 ]}
             >
                 <AdminPage />

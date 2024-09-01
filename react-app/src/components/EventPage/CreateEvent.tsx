@@ -14,7 +14,7 @@ interface CreateEventBody {
   description: string;
   event_date: string;
   location: string;
-  max_participants: number;
+  max_participant: number;
   usersId: [];
   category_event?: event_category_event
   category_animal?: event_category_animal
@@ -42,7 +42,7 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
       description,
       event_date: eventDate,
       location,
-      max_participants: maxParticipants,
+      max_participant: Number(maxParticipants),
       usersId,
       category_event: categoryEvent,
       category_animal: categoryAnimal,
