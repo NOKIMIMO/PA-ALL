@@ -3,6 +3,7 @@ import UserService from '../../services/UserService';
 import { CustomError } from '../../commons/Error';
 import GenericTable from './GenereicTable';
 import { useUser } from '../../context/UserContext';
+import BanModal from './BanModal';
 
 interface User {
     id: number;
@@ -17,6 +18,7 @@ const UserTable: React.FC = () => {
     const [limit] = useState(10);
     const [error, setError] = useState<string | null>(null);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [banUserId, setBanUserId] = useState<number | null>(null); // State to manage modal visibility
     const { user } = useUser();
 
     useEffect(() => {
@@ -85,13 +87,11 @@ const UserTable: React.FC = () => {
         }
     };
 
-    const handleBan = async (id: number) => {
+    const handleBan = async (data: { user_id: number; message: string; reason: string; end_date: string }) => {
         try {
-            // Implement the ban functionality here
-            console.log(`Ban user with id: ${id}`);
-            // You might want to call a UserService method to handle the ban action
-            await UserService.banUserById(id.toString());
-
+            console.log(`Banning user with id: ${data.user_id}`);
+            await UserService.banUserById(data.user_id.toString(), data);
+            setBanUserId(null);
             fetchUsers();
         } catch (err) {
             setError((err as Error).message);
@@ -100,11 +100,8 @@ const UserTable: React.FC = () => {
 
     const handleUnBan = async (id: number) => {
         try {
-            // Implement the unban functionality here
             console.log(`Unban user with id: ${id}`);
-            // You might want to call a UserService method to handle the unban action
             await UserService.unBanUserById(id.toString());
-
             fetchUsers();
         } catch (err) {
             setError((err as Error).message);
@@ -164,7 +161,7 @@ const UserTable: React.FC = () => {
                 onCancelEdit={handleCancelEdit}
                 onBan={{
                     banned: false, // Will be handled in GenericTable based on row data
-                    handleBan,
+                    handleBan: (id: number) => setBanUserId(id), // Open modal on ban click
                     handleUnBan
                 }}
                 editingRow={editingUser}
@@ -185,6 +182,13 @@ const UserTable: React.FC = () => {
                     Next
                 </button>
             </div>
+            {banUserId !== null && (
+                <BanModal
+                    userId={banUserId}
+                    onSubmit={handleBan}
+                    onClose={() => setBanUserId(null)}
+                />
+            )}
         </div>
     );
 };
