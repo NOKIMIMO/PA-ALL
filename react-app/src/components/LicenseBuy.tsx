@@ -1,6 +1,7 @@
 import { loadStripe } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
 import { StripeService } from '../services/StripeService';
+import { useUser } from '../context/UserContext';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUB);
 
@@ -11,6 +12,7 @@ interface TierDataProps {
     price: number;
     description: string;
     features: string[];
+    payment_mode: 'subscription' | 'payment';
 }
 
 const BuyLicenseCard = () => {
@@ -19,11 +21,13 @@ const BuyLicenseCard = () => {
     const [sessionId, setSessionId] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
+    const {user} = useUser();
 
     useEffect(() => {
         const loadTierData = async () => {
             try {
                 const tiers = await StripeService.getLicenses();
+                console.log('Tiers:', tiers);
                 setTierData(tiers);
                 // Set default selected tier if there is data
                 if (tiers.length > 0) {
@@ -41,10 +45,11 @@ const BuyLicenseCard = () => {
     }, []);
 
     const handleTierSelection = async (tier: TierDataProps) => {
+        console.log('Selected Tier:', tier);
         setSelectedTier(tier);
         if (tier.price > 0) {
             try {
-                const session = await StripeService.createCheckoutSession(tier.price_id);
+                const session = await StripeService.createCheckoutSession(null,tier.price_id,tier.payment_mode,user?.email!);
                 setSessionId(session.id);
                 setError('');
             } catch (error) {

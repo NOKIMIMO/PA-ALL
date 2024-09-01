@@ -203,7 +203,7 @@ export default class EventUseCase {
         if (!user) {
             throw new CustomError(404,'User not found')
         }
-        if (user.role !== user_access_type.SUPER_ADMIN, user.role !== user_access_type.ADMIN) {
+        if (user.role !== user_access_type.SUPER_ADMIN && user.role !== user_access_type.ADMIN) {
             throw new CustomError(401,'User not allowed to remove event manager')
         }
         if (data.title) {

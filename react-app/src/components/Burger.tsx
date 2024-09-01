@@ -45,6 +45,7 @@ export default function Burger({ role }: BurgerProps) {
                             <li><a href='/vault'>GDE</a></li>
                         )
                     }
+                    
                     {isLogged && isAdmin && <li><a href='/admin'>Admin</a></li>}
                 </ul>
             </div>

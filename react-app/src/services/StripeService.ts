@@ -1,14 +1,17 @@
 import { CustomError } from '../commons/Error';
 
 export class StripeService {
-    static async createCheckoutSession(id: string) {
+    static async createCheckoutSession(amount: number | null, priceId: string | null, mode: string, email: string) {
         const response = await fetch('/api/v1/payment/create-checkout-session', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                id: id, // Send the amount to the server
+                amount: amount, // Send the amount to the server
+                id: priceId, // Send the priceId to the server
+                mode: mode,
+                email: email
             }),
         });
 

@@ -1,6 +1,7 @@
 import { loadStripe } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
 import { StripeService } from '../services/StripeService';
+import { useUser } from '../context/UserContext';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUB);
 
@@ -8,6 +9,7 @@ const StripeCheckoutButton = () => {
     const [sessionId, setSessionId] = useState<string>('');
     const [amount, setAmount] = useState<string>(''); // État pour le montant de la donation
     const [error, setError] = useState<string>('');
+    const {user} = useUser();
 
     useEffect(() => {
         const createCheckoutSession = async () => {
@@ -19,7 +21,7 @@ const StripeCheckoutButton = () => {
                 return;
             }
             try {
-                const session = await StripeService.createCheckoutSession(parsedAmount);
+                const session = await StripeService.createCheckoutSession(parsedAmount,null,'payment',user!.email);
                 setSessionId(session.id);
                 setError(''); // Réinitialisez l'erreur si la création réussit
             } catch (error) {
@@ -61,7 +63,7 @@ const StripeCheckoutButton = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="border border-gray-300 p-2 mb-4 w-full"
-                    placeholder="Amount in dollars"
+                    placeholder="Amount in euros"
                 />
                 {error && <p className="text-red-500 mb-4">{error}</p>}
                 <button

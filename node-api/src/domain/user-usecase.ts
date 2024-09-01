@@ -42,10 +42,10 @@ export class UserUseCase {
 
     async listUsers(filter: ListUserValidationRequest): Promise<{ users: UserResponse[]; totalCount: number; }> {
         const query = this.db.createQueryBuilder(User, 'user')
-            .where("user.active = :active", { active: true }); // Ajoutez cette condition pour filtrer les utilisateurs inactifs
+            // .where("user.active = :active", { active: true}); // Ajoutez cette condition pour filtrer les utilisateurs inactifs
 
         if (filter.role) {
-            query.andWhere("user.role = :role", { role: filter.role });
+            query.where("user.role = :role", { role: filter.role });
         }
         if (filter.limit) {
             query.limit(filter.limit);
