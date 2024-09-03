@@ -160,6 +160,7 @@ router.get('/:agId',
         try {
             const agUsecase = new AgUseCase(db);
             const ag = await agUsecase.getAgById(agId, req.user?.userId!);
+            console.log(ag);
             res.status(200);
             res.json(ag);
         } catch (error) {

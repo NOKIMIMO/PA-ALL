@@ -184,7 +184,7 @@ export default class AgUseCase {
         }
         if (ag.vote_id) {
             const voteRepo = this.db.getRepository(Vote)
-            const vote = await voteRepo.findOne({ where: { id }, relations: ['options'] });
+            const vote = await voteRepo.findOne({ where: { id : ag.vote_id }, relations: ['options'] });
             if (!vote) {
                 throw new CustomError(404, 'Vote not found')
             }

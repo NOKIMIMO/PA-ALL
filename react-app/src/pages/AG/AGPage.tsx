@@ -25,7 +25,6 @@ export default function AGPage() {
   const fetchAg = async () => {
     try {
       const agData = await AGService.getAgById(parseInt(agId!));
-      console.log(agData);
       setAg(agData);
       setIsParticipating(agData.joined)
       setTotalMembers(agData.numberOfParticipants)
@@ -76,6 +75,7 @@ export default function AGPage() {
 
   const isBelowMinParticipants = ag?.isAG && participants < minParticipants;
 
+  console.log("AG Data:", ag);
   return (
     <div className="container mx-auto mt-10 p-5">
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -165,7 +165,7 @@ export default function AGPage() {
       {isParticipating &&
         <div className="p-5">
           {/* Conditionally render the VoteDetail component */}
-          {ag.vote_info && <VoteDetail voteId={ag.vote_info.vote.id} />}
+          {ag.vote_info && <VoteDetail voteId={ag.vote_id} />}
         </div>
       }
     </div>
