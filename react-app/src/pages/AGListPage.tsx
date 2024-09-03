@@ -74,6 +74,32 @@ export default function AGListPage() {
     }
   };
 
+  const filterAgByDate = (events: Ag[], startDate: string, endDate: string) => {
+    if (!startDate && !endDate) {
+      return events;
+    }
+
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
+
+    return events.filter(event => {
+      const eventDate = new Date(event.ag_date).getTime();
+      return (!startDate || eventDate >= start) && (!endDate || eventDate <= end);
+    });
+  };
+
+  const filterAgBySearch = (events: Ag[], query: string) => {
+    if (!query) {
+      return events;
+    }
+
+    return events.filter(event =>
+      event.title.toLowerCase().includes(query.toLowerCase()) ||
+      event.description.toLowerCase().includes(query.toLowerCase()) ||
+      event.location.toLowerCase().includes(query.toLowerCase())
+    );
+  };
+
   const handleDelete = async (id: number) => {
     try {
       await AgService.deleteAg(id);
@@ -82,6 +108,9 @@ export default function AGListPage() {
       setError((err as Error).message);
     }
   }
+
+  const filteredAg = filterAgByDate(ags, startDate, endDate);
+  const finalFilteredAg = filterAgBySearch(filteredAg, searchQuery);
 
   return (
     <div className="container mx-auto mt-5 p-4">
@@ -137,7 +166,9 @@ export default function AGListPage() {
       {loading && <Loading />}
       {error && <div className="text-red-500">{error}</div>}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {ags.map((ag) => (
+        
+        {finalFilteredAg.length === 0 ? <div>No AGs found</div> : finalFilteredAg.length > 0
+         && (finalFilteredAg.map((ag) => (
           <Card
             key={ag.id}
             title={ag.title}
@@ -148,7 +179,8 @@ export default function AGListPage() {
             onEdit={() => { }}
             onDelete={() => handleDelete(ag.id)}
           />
-        ))}
+        )))
+        }
       </div>
     </div>
   );

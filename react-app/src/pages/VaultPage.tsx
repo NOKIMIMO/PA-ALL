@@ -117,7 +117,11 @@ export default function VaultPage() {
                     }
                     // If the file is a folder, perform a recursive search
                     if (file.type === "folder") {
+                      if (file.id === id) {
+                        return {...file,encrypted:false} as TypedFile;
+                      }
                         const foundFile = searchFolders([file as FolderType]);
+                        console.log(foundFile);
                         if (foundFile) {
                             return foundFile;
                         }
@@ -140,7 +144,6 @@ export default function VaultPage() {
         //in the confirmation alert, force the user to rewrite the filename to confirm deletion
         const confirmation = prompt(`Please type the name of the file to confirm deletion: ${filename}`);
         if (confirmation !== filename) {
-          console.log(confirmation, filename);
             alert("File name does not match. Deletion cancelled.");
             return
         }
