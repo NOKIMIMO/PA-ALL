@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AGService from "../../services/AGService";
 import { useToast } from '../../context/ToastManager';
 import { ToastType } from '../../enum/toast';
 import { ag_category } from "../../enum/ag-category";
 import VotingModal from "./createVoteInAg";
+import UserService from "../../services/UserService";
 
 interface CreateEventProps {
   onEventCreated: () => void;
@@ -23,14 +24,28 @@ interface CreateAgRequest {
 
 const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) => {
   const [title, setTitle] = useState<string>("");
+  const [min_admins, setMin_admins] = useState<number>(1);
+  const [max_admins, setMax_admins] = useState<number>(1);
   const [description, setDescription] = useState<string>("");
   const [ag_date, setAg_date] = useState<string>("");
   const [location, setLocation] = useState<string>("");
-  const [minimum_participants, setMinimum_participants] = useState<number>(5);
+  const [minimum_participants, setMinimum_participants] = useState<number>(1);
   const [category, setCategory] = useState<ag_category>(ag_category.GENERAL);
   const [creatingVoting, setCreatingVoting] = useState<boolean>(false);
   const [request, setRequest] = useState<CreateAgRequest>();
   const { addToast } = useToast();
+
+  const getMinMaxAdmins = async () => {
+    const data = await UserService.getAdminUserList();
+    const min = (data.totalCount / 2) <1 ? 1 : Math.floor(data.totalCount / 2)+1;
+    const max = data.totalCount<1 ? 1 : data.totalCount;
+    console.log(min,max)
+    setMin_admins(min);
+    setMax_admins(max);
+  }
+  useEffect(() => {
+    getMinMaxAdmins()
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,7 +148,8 @@ const CreateEvent: React.FC<CreateEventProps> = ({ onEventCreated, onCancel }) =
               value={minimum_participants}
               onChange={(e) => setMinimum_participants(parseInt(e.target.value))}
               className="w-full p-2 border border-gray-300 rounded-md"
-              min={5}
+              min={min_admins}
+              max={max_admins}
               required
             />
           </div>
