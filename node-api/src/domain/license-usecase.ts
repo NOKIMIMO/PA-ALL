@@ -38,8 +38,9 @@ export class LicenseUseCase {
             expirationDate: expirationDate
         }])
         await licenseRepo.save(license);
-        user.role = user_access_type.LICENSED;
-        await userRepo.save(user);
 
+        user.role = user_access_type.LICENSED;
+
+        await userRepo.save(user);
     }
 }

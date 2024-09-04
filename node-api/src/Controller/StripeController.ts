@@ -41,22 +41,23 @@ router.get('/licenses',
             const productInfo = await stripe.prices.list({
                 expand: ['data.product'],
             });
-
+            // console.log(productInfo.data);
             const licenses: MembershipResponse[] = productInfo.data
-            .filter(price => price.active)  // Filter for active products
-            .map((price) => {
-                const product = price.product as Stripe.Product; // Type assertion here
-                const paymentMode = price.recurring ? 'subscription' : 'payment';
-                return {
-                    id: product.id,
-                    price_id: price.id,
-                    name: product.name,
-                    price: 0.01 * price.unit_amount!,
-                    description: product.description ? product.description : '',
-                    features: product.marketing_features ? product.marketing_features.map((feature) => feature.name || '') : [], // Ensure marketing_features is defined
-                    payment_mode: paymentMode,
-                };
-            });
+                // .filter(price => price.active)  // Filter for active products
+                .filter(price => (price.product as Stripe.Product).name !== 'Donation') // Filter out donation products
+                .map((price) => {
+                    const product = price.product as Stripe.Product; // Type assertion here
+                    const paymentMode = price.recurring ? 'subscription' : 'payment';
+                    return {
+                        id: product.id,
+                        price_id: price.id,
+                        name: product.name,
+                        price: 0.01 * price.unit_amount!,
+                        description: product.description ? product.description : '',
+                        features: product.marketing_features ? product.marketing_features.map((feature) => feature.name || '') : [], // Ensure marketing_features is defined
+                        payment_mode: paymentMode,
+                    };
+                });
 
 
             licenses.unshift(FreeTier);
@@ -104,10 +105,9 @@ router.get('/licenses',
 
     router.post('/create-checkout-session', async (req, res) => {
         try {
-            const { amount, price_id, mode, email } = req.body;
-    
+            const { amount, id, mode, email } = req.body;
             // Validate input
-            if ((amount && isNaN(amount)) || (price_id && !price_id)) {
+            if ((amount && isNaN(amount)) || (id && !id)) {
                 return res.status(400).json({ error: 'Invalid input' });
             }
     
@@ -116,7 +116,6 @@ router.get('/licenses',
     
             let lineItems;
             let type;
-    
             if (amount) {
                 // Handle donation
                 const product = await stripe.products.create({
@@ -136,11 +135,11 @@ router.get('/licenses',
                     },
                 ];
                 type='donation';
-            } else if (price_id) {
+            } else if (id) {
                 // Handle product purchase
                 lineItems = [
                     {
-                        price: price_id,
+                        price: id,
                         quantity: 1,
                     },
                 ];
